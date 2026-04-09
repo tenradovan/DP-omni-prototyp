@@ -7,23 +7,38 @@ import { AfterCall } from './components/AfterCall';
 import { QueueMapping } from './components/QueueMapping';
 import { SkillMatrix } from './components/SkillMatrix';
 
-type Screen = 'login' | 'before' | 'during' | 'after' | 'queue-mapping' | 'skill-matrix';
+export type Screen = 'login' | 'before' | 'during' | 'after' | 'queue-mapping' | 'skill-matrix';
+export type Role = 'operator' | 'admin';
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('login');
+  const [role, setRole] = useState<Role>('operator');
+
+  const handleNavigate = (screen: Screen) => setCurrentScreen(screen);
+  const handleRoleChange = (newRole: Role) => {
+    setRole(newRole);
+    setCurrentScreen(newRole === 'operator' ? 'before' : 'queue-mapping');
+  };
 
   const showNav = currentScreen !== 'login';
 
   return (
     <div className="min-h-screen bg-surface">
-      {showNav && <Navigation currentScreen={currentScreen} onNavigate={setCurrentScreen} />}
+      {showNav && (
+        <Navigation
+          currentScreen={currentScreen}
+          role={role}
+          onNavigate={handleNavigate}
+          onRoleChange={handleRoleChange}
+        />
+      )}
 
       <main key={currentScreen}>
-        {currentScreen === 'login' && <LoginScreen onNavigate={setCurrentScreen} />}
-        {currentScreen === 'before' && <BeforeCall onNavigate={setCurrentScreen} />}
-        {currentScreen === 'during' && <DuringCall onNavigate={setCurrentScreen} />}
-        {currentScreen === 'after' && <AfterCall onNavigate={setCurrentScreen} />}
-        {currentScreen === 'queue-mapping' && <QueueMapping />}
+        {currentScreen === 'login'        && <LoginScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'before'       && <BeforeCall  onNavigate={handleNavigate} />}
+        {currentScreen === 'during'       && <DuringCall  onNavigate={handleNavigate} />}
+        {currentScreen === 'after'        && <AfterCall   onNavigate={handleNavigate} />}
+        {currentScreen === 'queue-mapping'&& <QueueMapping />}
         {currentScreen === 'skill-matrix' && <SkillMatrix />}
       </main>
     </div>
