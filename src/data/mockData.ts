@@ -181,7 +181,7 @@ export const hints: Hint[] = [
   {
     id: 'h1',
     title: '⚠️ Ověření identity klienta',
-    subtitle: 'Povinné před přístupem k pojistné události',
+    subtitle: 'Pro ověření požádejte o rodné číslo a datum a místo narození.',
     category: 'compliance',
     detail: 'Dle bezpečnostní matice: požádejte o rodné číslo A datum a místo narození. Oba údaje musí souhlasit — při neshodě hovor ukončete dle protokolu P-02.',
     script: 'Dobrý den, tady pojišťovna Direct. Abych vám mohl/a pomoci, potřebuji ověřit vaši totožnost. Sdělíte mi prosím rodné číslo a datum narození?',
@@ -190,7 +190,7 @@ export const hints: Hint[] = [
   {
     id: 'h2',
     title: '🎫 Otevřený ticket · Reklamace vyúčtování',
-    subtitle: 'IPEX-2025-0042 · čeká 3 dny · bez odpovědi',
+    subtitle: 'IPEX-2025-0042 · čeká 3 dny bez odpovědi. Nabídněte přesun na prioritní frontu.',
     category: 'info',
     detail: 'Klientka zaslala email s nesouhlasem s fakturací HAV za únor 2026. Ticket přiřazen na Back-office, dosud bez odpovědi. Pokud téma klientka zmíní — ujistěte ji, že situace je v řešení, a nabídněte eskalaci.',
     script: 'Vidím, že máte otevřený požadavek ohledně vyúčtování z 5. dubna. Zpracovává ho naše back-office, odpověď by měla přijít do 2 pracovních dnů. Chcete, abych to posunul/a na prioritní frontu?',
@@ -199,7 +199,7 @@ export const hints: Hint[] = [
   {
     id: 'h3',
     title: '📋 Protokol hlášení škody na vozidle',
-    subtitle: 'Doporučený postup — 5 kroků',
+    subtitle: 'Zjistit: datum + místo + poškozené části + SPZ viníka nebo „viník neznámý".',
     category: 'compliance',
     detail: '1. Datum, čas a místo nehody. 2. Popis poškození (které části vozidla). 3. SPZ viníka nebo poznámka „viník neznámý". 4. Vytvořit číslo PU v systému. 5. Informovat o lhůtě zaslání fotodokumentace (5 prac. dní).',
     script: 'Pomohu vám s nahlášením. Potřebuji: datum a místo nehody, popis poškozených částí a SPZ druhého vozidla — nebo zaznamenám „viník neznámý". Pak přidělíme číslo pojistné události.',
@@ -208,7 +208,7 @@ export const hints: Hint[] = [
   {
     id: 'h4',
     title: '🐾 Nezaplacená splátka · Pojištění mazlíčků',
-    subtitle: 'Splatnost 1. 3. 2026 · hrozí deaktivace za 12 dní',
+    subtitle: 'Dlužná splátka 320 Kč · splatnost 1. 3. 2026 · deaktivace hrozí do 31. 3.',
     category: 'info',
     detail: 'Pojištění psa (Jack Russell Terrier, Rexík) má dlužnou splátku 320 Kč ze dne 1. 3. 2026. Pokud nebude uhrazena do 31. 3. 2026, dojde k automatické deaktivaci pojistky.',
     script: 'Mimochodem, vidím, že máte u nás pojistku na mazlíčka a eviduji nezaplacenou splátku z 1. března. Mohu vám poslat platební odkaz SMS, ať si pojistku nedeaktivujete.',
@@ -217,7 +217,7 @@ export const hints: Hint[] = [
   {
     id: 'h5',
     title: '💬 Reakce na námitku · Délka likvidace',
-    subtitle: 'Klient zmiňuje, že minulá likvidace trvala příliš dlouho',
+    subtitle: 'Zákonná lhůta 30 dní. Průměr u Direct: 18 dní + SMS notifikace při každé změně stavu.',
     category: 'objection',
     detail: 'Standardní zákonná lhůta likvidace je 30 dní. Průměrná doba likvidace u Direct je 18 dní. Pokud klient zmiňuje negativní zkušenost, uznejte problém a nabídněte přímý kontakt na likvidátora + SMS notifikace.',
     script: 'Rozumím, to je frustrující. Průměrná doba likvidace u nás je 18 dní a budete dostávat SMS při každé změně stavu. Pokud by to trvalo déle, napište mi a eskaluji přímo na likvidátora.',
@@ -226,7 +226,7 @@ export const hints: Hint[] = [
   {
     id: 'h6',
     title: '📸 Instrukce k zaslání fotodokumentace',
-    subtitle: 'Způsob, obsah a termín odeslání',
+    subtitle: 'Min. 4 záběry poškozených partií + celkový záběr s viditelnou SPZ. Do 5 prac. dní.',
     category: 'compliance',
     detail: 'Fotografie poslat na likvidace@direct.cz nebo přes Moje Direct. Minimálně: 4 záběry poškozených partií ze vzdálenosti ~1 m + celkový záběr vozidla s viditelnou SPZ. Lhůta: 5 pracovních dní od hlášení.',
     script: 'Foto nám pošlete do 5 pracovních dní na likvidace@direct.cz nebo přes aplikaci Moje Direct. Potřebujeme 4 záběry poškozené části a celkovou fotku vozidla s SPZ v záběru.',
@@ -235,7 +235,7 @@ export const hints: Hint[] = [
   {
     id: 'h7',
     title: '🏠 Cross-sell · Pojištění domácnosti',
-    subtitle: 'Vypršelo 10. 1. 2025 · vhodný moment k obnově',
+    subtitle: 'Pojistka vypršela 10. 1. 2025, neobnovena. Nabídnout kalkulaci emailem na konci hovoru.',
     category: 'product',
     detail: 'Klientka měla pojištění domácnosti (Vinohradská 42, Praha 2), které vypršelo 10. 1. 2025 a neobnovila. Byt v centru Prahy — relevantní produkt. Nabídnout až na konci hovoru, kdy je klientka spokojená.',
     script: 'Ještě vidím, že vám loni vypršelo pojištění domácnosti. Pro byt v Praze 2 máme teď zajímavou cenu — mohu vám poslat kalkulaci emailem? Nezavazuje vás to k ničemu.',
@@ -244,7 +244,7 @@ export const hints: Hint[] = [
   {
     id: 'h8',
     title: '✅ Shrnutí dalších kroků pro klientku',
-    subtitle: 'Připomenout před ukončením hovoru',
+    subtitle: 'Připomenout: číslo PU · foto do 5 dní na likvidace@direct.cz · splátka mazlíčků do 31. 3.',
     category: 'compliance',
     detail: '1. Zaslat foto na likvidace@direct.cz do 5 prac. dní. 2. Číslo PU uvést v předmětu emailu. 3. SMS notifikace přijdou automaticky. 4. Splátka mazlíčků — uhradit do 31. 3. 2026.',
     script: 'Shrnutí: číslo PU je [vyplnit]. Pošlete nám fotky do pátku na likvidace@direct.cz. Budeme vás informovat SMS. A nezapomeňte na splátku pojistky pro Rexíka — do konce března. Mohu pro vás ještě něco udělat?',

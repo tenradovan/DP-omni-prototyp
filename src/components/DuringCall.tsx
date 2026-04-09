@@ -22,11 +22,11 @@ function HintCard({ hint, isNew }: { hint: Hint; isNew: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
 
-  const cat: Record<string, { bg: string; strip: string }> = {
-    compliance: { bg: 'bg-amber-50',   strip: 'bg-amber-400' },
-    objection:  { bg: 'bg-blue-50',    strip: 'bg-blue-400'  },
-    product:    { bg: 'bg-direct-25',  strip: 'bg-direct-500'},
-    info:       { bg: 'bg-purple-50',  strip: 'bg-purple-400'},
+  const cat: Record<string, { bg: string; text: string; strip: string }> = {
+    compliance: { bg: 'bg-amber-50',  text: 'text-amber-700', strip: 'bg-amber-400' },
+    objection:  { bg: 'bg-blue-50',   text: 'text-blue-700',  strip: 'bg-blue-400'  },
+    product:    { bg: 'bg-direct-25', text: 'text-direct-700',strip: 'bg-direct-500'},
+    info:       { bg: 'bg-purple-50', text: 'text-purple-700',strip: 'bg-purple-400'},
   };
   const c = cat[hint.category];
 
@@ -38,14 +38,18 @@ function HintCard({ hint, isNew }: { hint: Hint; isNew: boolean }) {
       <div className="flex">
         <div className={`w-1 rounded-l-xl shrink-0 ${c.strip}`} />
         <div className="flex-1 p-3.5">
-          {/* Header */}
+          {/* Collapsed header — v1 style: colored pill + bold main text */}
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <p className="font-bold text-direct-800 text-sm leading-snug">{hint.title}</p>
+              {/* Small colored pill with title */}
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${c.bg} ${c.text} border border-current/10`}>
+                  {hint.title}
+                </span>
                 {isNew && <span className="w-1.5 h-1.5 rounded-full bg-lime-500 animate-pulse shrink-0" />}
               </div>
-              <p className="text-[12px] text-gray-500 leading-tight">{hint.subtitle}</p>
+              {/* Bold actionable main text */}
+              <p className="font-bold text-direct-800 text-[13px] leading-snug">{hint.subtitle}</p>
             </div>
             <svg
               className={`w-3.5 h-3.5 text-gray-300 shrink-0 mt-1 transition-transform ${expanded ? 'rotate-180' : ''}`}
@@ -55,15 +59,14 @@ function HintCard({ hint, isNew }: { hint: Hint; isNew: boolean }) {
             </svg>
           </div>
 
-          {/* Expanded */}
+          {/* Expanded — script only + thumbs */}
           {expanded && (
             <div className="mt-3 space-y-2.5 animate-fade-in" onClick={e => e.stopPropagation()}>
-              <p className="text-sm text-gray-700 leading-relaxed">{hint.detail}</p>
-              <div className="bg-white/80 rounded-xl p-3 border border-white">
+              <div className="bg-white/80 rounded-xl p-3 border border-white/60">
                 <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Doporučený script</p>
                 <p className="text-sm text-direct-800 italic leading-relaxed">„{hint.script}"</p>
               </div>
-              <div className="flex justify-end gap-1.5 pt-1">
+              <div className="flex justify-end gap-1.5 pt-0.5">
                 <button
                   onClick={() => setFeedback(feedback === 'up' ? null : 'up')}
                   className={`w-7 h-7 rounded-md flex items-center justify-center transition-colors ${
@@ -190,32 +193,32 @@ export function DuringCall({ onNavigate }: DuringCallProps) {
         <div className="w-1/2 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto no-scrollbar space-y-3">
 
-            {/* Products */}
+            {/* Products — 2-column grid */}
             <div className="bg-white rounded-xl p-4 shadow-card">
               <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-2">Produkty</p>
-              <div className="space-y-1">
+              <div className="grid grid-cols-2 gap-1.5">
                 {products.map((p, i) => (
                   <div
                     key={i}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
+                    className={`flex items-center gap-2.5 rounded-lg px-3 py-2 transition-colors ${
                       p.platba === 'nezaplaceno'
                         ? 'bg-err-container/40'
                         : p.status === 'neaktivní'
-                          ? 'bg-gray-25 opacity-60'
+                          ? 'bg-gray-25 opacity-55'
                           : 'bg-gray-25'
                     }`}
                   >
-                    <span className="text-sm">{productIcons[p.name] ?? '📄'}</span>
+                    <span className="text-sm shrink-0">{productIcons[p.name] ?? '📄'}</span>
                     <div className="flex-1 min-w-0">
-                      <span className={`text-sm font-semibold block leading-tight ${p.status === 'neaktivní' ? 'text-gray-400' : 'text-direct-800'}`}>
+                      <span className={`text-[12px] font-semibold block leading-tight ${p.status === 'neaktivní' ? 'text-gray-400' : 'text-direct-800'}`}>
                         {p.name}
                       </span>
-                      <span className="text-[11px] text-gray-400 truncate block">{p.description}</span>
+                      <span className="text-[10px] text-gray-400 truncate block leading-tight">{p.description}</span>
                     </div>
-                    <div className="shrink-0">
+                    <div className="shrink-0 ml-auto">
                       {p.platba === 'zaplaceno'   && <span className="text-direct-500 text-xs font-bold">✓</span>}
-                      {p.platba === 'nezaplaceno' && <span className="text-[10px] font-bold text-err bg-err-container px-2 py-0.5 rounded-full">Dluh</span>}
-                      {p.platba === 'vypršelo'    && <span className="text-[10px] text-gray-300">Neakt.</span>}
+                      {p.platba === 'nezaplaceno' && <span className="text-[10px] font-bold text-err">!</span>}
+                      {p.platba === 'vypršelo'    && <span className="text-[10px] text-gray-300">—</span>}
                     </div>
                   </div>
                 ))}
@@ -304,7 +307,7 @@ export function DuringCall({ onNavigate }: DuringCallProps) {
               </span>
             </div>
 
-            {/* Hint list */}
+            {/* Hint list — 2 most recent full opacity, rest dimmed */}
             <div className="flex-1 overflow-y-auto no-scrollbar p-3 space-y-2">
               {orderedHints.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 text-gray-300">
@@ -314,9 +317,25 @@ export function DuringCall({ onNavigate }: DuringCallProps) {
                   <p className="text-sm">Whisperer čeká na průběh hovoru…</p>
                 </div>
               )}
-              {orderedHints.map(hint => (
+              {/* Top 2 — full opacity */}
+              {orderedHints.slice(0, 2).map(hint => (
                 <HintCard key={hint.id} hint={hint} isNew={newHintIds.has(hint.id)} />
               ))}
+              {/* Divider + older hints dimmed */}
+              {orderedHints.length > 2 && (
+                <>
+                  <div className="flex items-center gap-2 py-1">
+                    <div className="flex-1 h-px bg-gray-100" />
+                    <p className="text-[10px] text-gray-300 font-medium shrink-0">Starší</p>
+                    <div className="flex-1 h-px bg-gray-100" />
+                  </div>
+                  <div className="space-y-2 opacity-50">
+                    {orderedHints.slice(2).map(hint => (
+                      <HintCard key={hint.id} hint={hint} isNew={false} />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
