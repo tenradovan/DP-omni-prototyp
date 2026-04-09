@@ -8,36 +8,60 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['"Plus Jakarta Sans"', 'sans-serif'],
-        body: ['"Manrope"', 'sans-serif'],
+        sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
       },
       colors: {
-        surface: {
-          DEFAULT: '#e6fff5',
-          'container-lowest': '#ffffff',
-          'container-low': '#c9ffec',
-          'container': '#b6eedb',
-          'container-high': '#a8e5d0',
-          'container-highest': '#b6eedb',
+        // Direct brand palette from direct.cz
+        direct: {
+          900: '#00201a',   // overlay / deepest
+          800: '#004033',   // primary text, dark cards, primary buttons
+          700: '#006b55',   // hover states
+          600: '#008066',   // accent links
+          500: '#21937a',   // lighter accent
+          400: '#43a68e',
+          300: '#64b8a3',
+          200: '#86cbb7',
+          100: '#a7decb',
+          50: '#c4e9dc',
+          25: '#d1f3e7',
         },
-        brand: {
-          primary: '#C4DE00',
-          'primary-container': '#c4de00',
-          'on-primary': '#535f00',
-          'secondary-container': '#b3ebd8',
-          'on-secondary': '#376c5d',
+        lime: {
+          950: '#2d3a00',
+          900: '#415b00',
+          800: '#628f1b',
+          700: '#83a913',
+          600: '#a3c40b',
+          500: '#c4de00',   // THE brand lime
+          400: '#d3e642',
+          300: '#e1ed80',
+          200: '#eaf3a3',
+          100: '#f3f9c5',
+          50: '#f9fce2',
         },
-        on: {
-          surface: '#393939',
-          'surface-variant': '#5a5a5a',
+        gray: {
+          950: '#002d24',
+          900: '#004033',
+          800: '#1a5347',
+          700: '#33665c',
+          600: '#4d7970',
+          500: '#668c85',
+          400: '#809f99',
+          300: '#99b3ad',
+          200: '#b2c6c2',
+          100: '#ccd9d6',
+          50: '#e5eceb',
+          25: '#f2f5f5',
         },
         err: {
-          DEFAULT: '#ba1a1a',
-          container: '#ffdad6',
+          DEFAULT: '#d32f2f',
+          light: '#ff6659',
+          container: '#ffeaea',
         },
-        outline: {
-          variant: 'rgba(57, 57, 57, 0.15)',
+        warn: {
+          DEFAULT: '#f57c00',
+          container: '#fff3e0',
         },
+        // shadcn compatibility
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -76,10 +100,15 @@ module.exports = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-        xl: "1.5rem",
+        xl: "1rem",
+        '2xl': "1.25rem",
+        '3xl': "1.5rem",
       },
       boxShadow: {
-        ambient: '0px 24px 48px rgba(0, 32, 25, 0.06)',
+        'card': '0 2px 8px rgba(0, 64, 51, 0.06)',
+        'card-hover': '0 4px 16px rgba(0, 64, 51, 0.1)',
+        'float': '0 8px 32px rgba(0, 64, 51, 0.08)',
+        'ambient': '0 24px 48px rgba(0, 64, 51, 0.06)',
       },
       keyframes: {
         "accordion-down": {
@@ -91,19 +120,19 @@ module.exports = {
           to: { height: "0" },
         },
         "fade-in": {
-          from: { opacity: "0", transform: "translateY(8px)" },
+          from: { opacity: "0", transform: "translateY(6px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
-        "slide-in-right": {
-          from: { opacity: "0", transform: "translateX(16px)" },
+        "slide-in": {
+          from: { opacity: "0", transform: "translateX(12px)" },
           to: { opacity: "1", transform: "translateX(0)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fade-in 0.3s ease-out",
-        "slide-in-right": "slide-in-right 0.3s ease-out",
+        "fade-in": "fade-in 0.25s ease-out",
+        "slide-in": "slide-in 0.25s ease-out",
       },
     },
   },
