@@ -88,7 +88,7 @@ export function LoginScreen({ onNavigate }: LoginScreenProps) {
                 </div>
               ) : (
                 <>
-                  <svg className="w-4.5 h-4.5" viewBox="0 0 21 21" fill="none">
+                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 21 21" fill="none">
                     <path d="M0 0h10v10H0z" fill="#f25022"/><path d="M11 0h10v10H11z" fill="#7fba00"/>
                     <path d="M0 11h10v10H0z" fill="#00a4ef"/><path d="M11 11h10v10H11z" fill="#ffb900"/>
                   </svg>
