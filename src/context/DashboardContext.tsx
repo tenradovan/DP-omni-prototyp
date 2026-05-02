@@ -18,7 +18,7 @@ import type { ReactNode } from 'react';
 
 export type Role       = 'operator' | 'admin';
 export type Team       = 'Poradce' | 'KC' | 'KAPU';
-export type ClientType = 'standard' | 'company' | 'broker';
+export type ClientType = 'standard' | 'company' | 'broker' | 'unknown';
 
 export const TEAM_LABELS: Record<Team, string> = {
   Poradce: 'Poradce',
@@ -30,6 +30,7 @@ export const CLIENT_TYPE_LABELS: Record<ClientType, string> = {
   standard: 'Standardní klient',
   company:  'Firma',
   broker:   'Makléř',
+  unknown:  'Neznámý',
 };
 
 // ─── Context ──────────────────────────────────────────────────────────────────
