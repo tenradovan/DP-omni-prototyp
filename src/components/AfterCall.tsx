@@ -1,10 +1,12 @@
-import { useState } from 'react';
-import { summaryText, zzjText, client } from '../data/mockData';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { summaryText, zzjSections, client } from '../data/mockData';
 import type { Screen } from '../App';
 
 interface AfterCallProps {
   onNavigate: (screen: Screen) => void;
 }
+
+// ─── Feedback buttons ─────────────────────────────────────────────────────────
 
 function FeedbackBtns() {
   const [fb, setFb] = useState<'up' | 'down' | null>(null);
@@ -81,11 +83,13 @@ function FeedbackBtns() {
   );
 }
 
-function CopyBtn({ text, label }: { text: string; label?: string }) {
+// ─── Copy button ──────────────────────────────────────────────────────────────
+
+function CopyBtn({ getText, label }: { getText: () => string; label?: string }) {
   const [ok, setOk] = useState(false);
   return (
     <button
-      onClick={() => { navigator.clipboard.writeText(text); setOk(true); setTimeout(() => setOk(false), 2000); }}
+      onClick={() => { navigator.clipboard.writeText(getText()); setOk(true); setTimeout(() => setOk(false), 2000); }}
       className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-25 text-gray-500 text-[11px] font-medium hover:bg-gray-50 transition-colors"
     >
       {ok
@@ -96,14 +100,36 @@ function CopyBtn({ text, label }: { text: string; label?: string }) {
   );
 }
 
+// ─── AfterCall ────────────────────────────────────────────────────────────────
+
+// Convert **word** markdown to <strong>word</strong> HTML, newlines to <br>
+function toHtml(text: string): string {
+  return text
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+}
+
 export function AfterCall({ onNavigate }: AfterCallProps) {
-  const [summary, setSummary] = useState(summaryText);
-  const [zzj, setZzj]         = useState(zzjText);
+  const [zzjValues, setZzjValues] = useState(zzjSections.map(s => s.content));
+  const summaryRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (summaryRef.current) {
+      summaryRef.current.innerHTML = toHtml(summaryText);
+    }
+  }, []);
+
+  const execBold = useCallback(() => {
+    document.execCommand('bold', false);
+    summaryRef.current?.focus();
+  }, []);
+
+  const getSummaryText = useCallback(() => summaryRef.current?.innerText ?? '', []);
 
   return (
-    <div className="pt-14 h-screen flex flex-col animate-fade-in">
-      {/* ── Header bar ──────────────────────────────────────────────── */}
-      <div className="px-6 py-3 bg-white border-b border-gray-100 flex items-center justify-between shrink-0">
+    <div className="pt-14 pb-16 lg:pb-0 min-h-screen lg:h-screen flex flex-col animate-fade-in">
+      {/* ── Header bar ──────────────────────────────────────────────────── */}
+      <div className="px-4 lg:px-6 py-3 bg-white border-b border-gray-100 flex flex-wrap items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-lime-50 text-direct-800 font-bold text-sm">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,7 +138,9 @@ export function AfterCall({ onNavigate }: AfterCallProps) {
             Po hovoru — ACW
           </span>
           <div>
-            <p className="text-sm text-direct-800"><span className="font-bold">{client.name}</span> · {client.čísloKlienta}</p>
+            <p className="text-sm text-direct-800">
+              <span className="font-bold">{client.name}</span> · {client.čísloKlienta}
+            </p>
             <p className="text-[11px] text-gray-400">Délka hovoru: 04:32</p>
           </div>
         </div>
@@ -127,11 +155,11 @@ export function AfterCall({ onNavigate }: AfterCallProps) {
         </button>
       </div>
 
-      {/* ── Two editors — fill remaining height ─────────────────────── */}
-      <div className="flex-1 grid grid-cols-2 gap-4 px-6 py-5 overflow-hidden">
+      {/* ── Two-column layout ────────────────────────────────────────────── */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 px-4 lg:px-6 py-4 lg:py-5 lg:overflow-hidden">
 
         {/* Souhrn hovoru */}
-        <div className="bg-white rounded-2xl shadow-card overflow-hidden flex flex-col">
+        <div className="bg-white rounded-2xl shadow-card flex flex-col lg:overflow-hidden">
           <div className="px-5 py-3.5 bg-blue-50 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,21 +169,24 @@ export function AfterCall({ onNavigate }: AfterCallProps) {
               <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 text-[10px] font-semibold">AI</span>
             </div>
             <div className="flex items-center gap-2">
-              <CopyBtn text={summary} />
+              <CopyBtn getText={getSummaryText} />
               <FeedbackBtns />
             </div>
           </div>
-          <div className="flex-1 p-5">
-            <textarea
-              value={summary}
-              onChange={e => setSummary(e.target.value)}
-              className="w-full h-full bg-gray-25 rounded-xl p-4 text-sm text-direct-800 leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-lime-500/30 min-h-[200px]"
+
+          {/* Rich-text editor */}
+          <div className="flex-1 px-5 pb-5 pt-3">
+            <div
+              ref={summaryRef}
+              contentEditable
+              suppressContentEditableWarning
+              className="w-full h-full bg-gray-25 rounded-xl p-4 text-sm text-direct-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-lime-500/30 min-h-[180px] cursor-text"
             />
           </div>
         </div>
 
-        {/* ZZJ */}
-        <div className="bg-white rounded-2xl shadow-card overflow-hidden flex flex-col">
+        {/* ZZJ — 3 sections */}
+        <div className="bg-white rounded-2xl shadow-card flex flex-col lg:overflow-hidden">
           <div className="px-5 py-3.5 bg-direct-25 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <svg className="w-4 h-4 text-direct-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,17 +195,28 @@ export function AfterCall({ onNavigate }: AfterCallProps) {
               <h3 className="text-sm font-bold text-direct-800">Záznam z jednání (ZZJ)</h3>
               <span className="px-2 py-0.5 rounded-full bg-direct-50 text-direct-600 text-[10px] font-semibold">AI</span>
             </div>
-            <div className="flex items-center gap-2">
-              <CopyBtn text={zzj} />
-              <FeedbackBtns />
-            </div>
+            <FeedbackBtns />
           </div>
-          <div className="flex-1 p-5">
-            <textarea
-              value={zzj}
-              onChange={e => setZzj(e.target.value)}
-              className="w-full h-full bg-gray-25 rounded-xl p-4 text-sm text-direct-800 leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-lime-500/30 min-h-[200px]"
-            />
+
+          <div className="flex-1 lg:overflow-y-auto no-scrollbar p-5 space-y-4">
+            {zzjSections.map((section, idx) => (
+              <div key={idx}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">{section.label}</p>
+                  <CopyBtn getText={() => zzjValues[idx]} />
+                </div>
+                <textarea
+                  value={zzjValues[idx]}
+                  onChange={e => {
+                    const next = [...zzjValues];
+                    next[idx] = e.target.value;
+                    setZzjValues(next);
+                  }}
+                  className="w-full bg-gray-25 rounded-xl p-3.5 text-sm text-direct-800 leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-lime-500/30 min-h-[90px]"
+                  rows={4}
+                />
+              </div>
+            ))}
           </div>
         </div>
 

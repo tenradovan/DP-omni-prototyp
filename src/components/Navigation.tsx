@@ -78,6 +78,7 @@ export function Navigation({ currentScreen, onNavigate, onRoleChange }: Navigati
   ).map(([v, l]) => ({ value: v, label: l }));
 
   return (
+    <>
     <nav className="fixed top-0 left-0 right-0 z-50 glass shadow-card h-14 px-6 flex items-center justify-between">
 
       {/* Logo */}
@@ -91,8 +92,8 @@ export function Navigation({ currentScreen, onNavigate, onRoleChange }: Navigati
         <span className="font-sans font-bold text-direct-800 text-[15px]">Direct pojišťovna</span>
       </div>
 
-      {/* Center nav */}
-      <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1">
+      {/* Center nav — desktop only */}
+      <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-1">
         {navItems.map((item, i) => {
           const isActive = currentScreen === item.screen;
           const isPast   = role === 'operator' && phaseIndex > i;
@@ -140,14 +141,6 @@ export function Navigation({ currentScreen, onNavigate, onRoleChange }: Navigati
             // Close when clicking outside
             onMouseLeave={() => {/* keep open on hover-off so user can click */}}
           >
-            {/* Role */}
-            <SegmentRow<Role>
-              label="Role"
-              options={roleOptions}
-              value={role}
-              onChange={v => { onRoleChange(v); setUserOpen(false); }}
-            />
-
             {/* Team — operator only */}
             {role === 'operator' && (
               <SegmentRow<Team>
@@ -178,5 +171,32 @@ export function Navigation({ currentScreen, onNavigate, onRoleChange }: Navigati
       </div>
 
     </nav>
+
+    {/* Mobile bottom nav — operator only */}
+    {role === 'operator' && (
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-t border-gray-100 px-2 pb-2 pt-1.5">
+        <div className="flex justify-around">
+          {operatorScreens.map((item, i) => {
+            const isActive = currentScreen === item.screen;
+            const isPast   = phaseIndex > i;
+            return (
+              <button
+                key={item.screen}
+                onClick={() => onNavigate(item.screen)}
+                className={`flex-1 flex flex-col items-center gap-1 py-1 transition-colors ${
+                  isActive ? 'text-direct-800' : isPast ? 'text-lime-600' : 'text-gray-300'
+                }`}
+              >
+                <div className={`w-10 h-1 rounded-full transition-colors ${
+                  isActive ? 'bg-direct-800' : isPast ? 'bg-lime-400' : 'bg-gray-100'
+                }`} />
+                <span className="text-[10px] font-semibold">{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    )}
+    </>
   );
 }

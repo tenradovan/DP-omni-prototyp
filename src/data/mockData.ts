@@ -6,13 +6,16 @@ export interface Client {
   type: 'standard';
   status: ClientStatus;
   name: string;
+  datumNarození: string;
   rodneČíslo: string;
   telefon: string;
-  email: string;
-  adresa: string;
+  email?: string;
+  trvaléBydliště: string;
   čísloKlienta: string;
   telVerified: boolean;
   emailVerified: boolean;
+  aktivníApp: boolean;
+  klientskáZóna: boolean;
 }
 
 export interface CompanyClient {
@@ -21,13 +24,15 @@ export interface CompanyClient {
   name: string;
   ičo: string;
   telefon: string;
-  email: string;
-  adresa: string;
+  email?: string;
+  trvaléBydliště: string;
   čísloKlienta: string;
   kontaktníOsoba: string;
   roleKontaktu: string;
   telVerified: boolean;
   emailVerified: boolean;
+  aktivníApp: boolean;
+  klientskáZóna: boolean;
 }
 
 export interface BrokerClientInfo {
@@ -36,21 +41,31 @@ export interface BrokerClientInfo {
   name: string;
   čísloBrokera: string;
   telefon: string;
-  email: string;
-  adresa: string;
+  email?: string;
+  trvaléBydliště: string;
   telVerified: boolean;
   emailVerified: boolean;
 }
 
-export interface Product {
+export interface RiskDetail {
   name: string;
+  limitPlnění?: string;
+  spoluÚčast?: string;
+  datumSjednání?: string;
+}
+
+export interface Product {
+  type: string;            // abbreviation: AUTO, MAJ, TRAVEL, MAZL, FLEET, BUD, ZÁS, ODP, BI, EL
+  name: string;            // category display name
   description: string;
   contractNumber?: string;
   status: 'aktivní' | 'neaktivní';
-  výročí: string;
+  začátekSmlouvy: string;  // contract start date (was výročí)
   platba: 'zaplaceno' | 'nezaplaceno' | 'vypršelo';
   limitPlnění?: string;
   spoluÚčast?: string;
+  risks?: string[];        // short risk badge list
+  riskDetails?: RiskDetail[];
 }
 
 export interface BrokerProduct extends Product {
@@ -60,6 +75,7 @@ export interface BrokerProduct extends Product {
 
 export interface Interaction {
   type: 'hovor' | 'email' | 'web';
+  direction: 'in' | 'out';
   date: string;
   relativeDate?: string;
   description: string;
@@ -73,12 +89,32 @@ export interface Ticket {
   age: string;
 }
 
+export type ClaimRoleKlienta =
+  | 'Pojištěný'
+  | 'Poškozený'
+  | 'Řidič pojištěného vozidla'
+  | 'Vinník';
+
+export type ClaimStatus =
+  | 'Otevřená'
+  | 'Uzavřená'
+  | 'Doložená'
+  | 'Čeká na dokumenty'
+  | 'Zamítnutá';
+
 export interface Claim {
   id: string;
   type: string;
   icon: string;
   risk: string;
-  status: 'aktivní' | 'neaktivní' | 'zamítnutá';
+  status: 'aktivní' | 'neaktivní' | 'zamítnutá'; // legacy sort key
+  statusBadge: ClaimStatus;
+  datumVzniku: string;
+  datumHlášení: string;
+  datumUzavření?: string;
+  relativeDays?: number;
+  roleKlienta: ClaimRoleKlienta;
+  nehodovýDěj?: string;
   limitPlnění?: string;
   spoluÚčast?: string;
 }
@@ -88,8 +124,13 @@ export interface Calculation {
   detail?: string;
   price?: string;
   date: string;
+  time?: string;
+  relativeDays?: number;
   solver?: string;
   isCurrent: boolean;
+  vehicleInfo?: string;
+  selectedRisks?: string[];
+  intermediary?: { name: string; dir: string };
 }
 
 export interface Hint {
@@ -117,77 +158,130 @@ export interface Operator {
   skills: Record<string, number>;
 }
 
+// ─── Disambiguation (ambiguous caller) ───────────────────────────────────────
+
+export interface AmbiguousCandidate {
+  name: string;
+  datumNarození: string;
+  trvaléBydliště: string;
+  čísloKlienta: string;
+  status: ClientStatus;
+}
+
+export const ambiguousCallers: AmbiguousCandidate[] = [
+  {
+    name: 'Jan Novák',
+    datumNarození: '15. 6. 1978',
+    trvaléBydliště: 'Mánesova 12, Praha 2',
+    čísloKlienta: 'KL-2019-00234',
+    status: 'aktivní',
+  },
+  {
+    name: 'Jan Novák',
+    datumNarození: '3. 11. 1991',
+    trvaléBydliště: 'Lidická 7, Brno',
+    čísloKlienta: 'KL-2021-01567',
+    status: 'aktivní',
+  },
+];
+
 // ─── Standard Client (Jana Nováková) ─────────────────────────────────────────
 
 export const client: Client = {
   type: 'standard',
   status: 'aktivní',
   name: 'Jana Nováková',
+  datumNarození: '5. 6. 1984',
   rodneČíslo: '845612/1234',
   telefon: '+420 602 345 678',
   email: 'jana.novakova@email.cz',
-  adresa: 'Vinohradská 42, Praha 2, 120 00',
+  trvaléBydliště: 'Vinohradská 42, Praha 2, 120 00',
   čísloKlienta: 'KL-2024-00891',
   telVerified: true,
   emailVerified: true,
+  aktivníApp: true,
+  klientskáZóna: true,
 };
 
 export const products: Product[] = [
   {
+    type: 'AUTO',
     name: 'Vozidla',
-    description: 'Havarijní pojištění · Škoda Octavia 4A2 3456',
+    description: 'Škoda Octavia 4A2 3456',
     contractNumber: 'SML-2024-4820',
     status: 'aktivní',
-    výročí: '15. 3. 2026',
-    platba: 'zaplaceno',
-    limitPlnění: '500 000 Kč',
-    spoluÚčast: '10 000 Kč',
-  },
-  {
-    name: 'Vozidla',
-    description: 'Povinné ručení · Škoda Octavia 4A2 3456',
-    contractNumber: 'SML-2024-4821',
-    status: 'aktivní',
-    výročí: '15. 3. 2026',
+    začátekSmlouvy: '15. 3. 2022',
     platba: 'zaplaceno',
     limitPlnění: '35 000 000 Kč',
     spoluÚčast: '0 Kč',
+    risks: ['Povinné ručení', 'Havarijní pojištění', 'Pojištění skel', 'Asistence vozidla', 'Právní asistence', 'Úrazové poj. řidiče'],
+    riskDetails: [
+      { name: 'Povinné ručení',          limitPlnění: '35 000 000 Kč', spoluÚčast: '0 Kč',      datumSjednání: '15. 3. 2022' },
+      { name: 'Havarijní pojištění',      limitPlnění: '500 000 Kč',   spoluÚčast: '10 000 Kč', datumSjednání: '15. 3. 2022' },
+      { name: 'Pojištění skel',           limitPlnění: '20 000 Kč',    spoluÚčast: '0 Kč',      datumSjednání: '15. 3. 2022' },
+      { name: 'Asistence vozidla',        limitPlnění: '—',             spoluÚčast: '0 Kč',      datumSjednání: '15. 3. 2022' },
+      { name: 'Právní asistence',         limitPlnění: '—',             spoluÚčast: '0 Kč',      datumSjednání: '15. 3. 2022' },
+      { name: 'Úrazové pojištění řidiče', limitPlnění: '500 000 Kč',   spoluÚčast: '0 Kč',      datumSjednání: '15. 3. 2022' },
+    ],
   },
   {
+    type: 'MAZL',
     name: 'Mazlíčci',
-    description: 'Pojištění psa · Jack Russell Terrier, Rexík',
+    description: 'Jack Russell Terrier, Rexík',
     contractNumber: 'SML-2023-2190',
     status: 'aktivní',
-    výročí: '8. 9. 2026',
+    začátekSmlouvy: '8. 9. 2023',
     platba: 'nezaplaceno',
     limitPlnění: '30 000 Kč',
     spoluÚčast: '500 Kč',
+    risks: ['Veterinární péče', 'Operace', 'Hospitalizace'],
+    riskDetails: [
+      { name: 'Veterinární péče',  limitPlnění: '30 000 Kč', spoluÚčast: '500 Kč', datumSjednání: '8. 9. 2023' },
+      { name: 'Operace',           limitPlnění: '20 000 Kč', spoluÚčast: '500 Kč', datumSjednání: '8. 9. 2023' },
+      { name: 'Hospitalizace',     limitPlnění: '5 000 Kč',  spoluÚčast: '0 Kč',   datumSjednání: '8. 9. 2023' },
+    ],
   },
   {
+    type: 'TRAVEL',
     name: 'Cestovní',
     description: 'Rodinné cestovní pojištění · Schengen + mimo EU',
     contractNumber: 'SML-2022-0891',
     status: 'neaktivní',
-    výročí: '1. 6. 2025',
+    začátekSmlouvy: '1. 6. 2022',
     platba: 'vypršelo',
     limitPlnění: '5 000 000 Kč',
     spoluÚčast: '0 Kč',
+    risks: ['Léčebné výlohy', 'Úraz', 'Storno', 'Zavazadla'],
+    riskDetails: [
+      { name: 'Léčebné výlohy',   limitPlnění: '5 000 000 Kč', spoluÚčast: '0 Kč',   datumSjednání: '1. 6. 2022' },
+      { name: 'Úraz',             limitPlnění: '500 000 Kč',   spoluÚčast: '0 Kč',   datumSjednání: '1. 6. 2022' },
+      { name: 'Storno cesty',     limitPlnění: '50 000 Kč',    spoluÚčast: '1 000 Kč', datumSjednání: '1. 6. 2022' },
+      { name: 'Zavazadla',        limitPlnění: '20 000 Kč',    spoluÚčast: '500 Kč', datumSjednání: '1. 6. 2022' },
+    ],
   },
   {
+    type: 'MAJ',
     name: 'Majetek',
     description: 'Pojištění domácnosti · Vinohradská 42, Praha 2',
     contractNumber: 'SML-2021-1120',
     status: 'neaktivní',
-    výročí: '10. 1. 2025',
+    začátekSmlouvy: '10. 1. 2021',
     platba: 'vypršelo',
     limitPlnění: '800 000 Kč',
     spoluÚčast: '1 000 Kč',
+    risks: ['Domácnost', 'Odpovědnost', 'Živelné pohromy'],
+    riskDetails: [
+      { name: 'Pojištění domácnosti', limitPlnění: '800 000 Kč', spoluÚčast: '1 000 Kč', datumSjednání: '10. 1. 2021' },
+      { name: 'Odpovědnost',          limitPlnění: '1 000 000 Kč', spoluÚčast: '0 Kč',  datumSjednání: '10. 1. 2021' },
+      { name: 'Živelné pohromy',      limitPlnění: '800 000 Kč',   spoluÚčast: '2 000 Kč', datumSjednání: '10. 1. 2021' },
+    ],
   },
 ];
 
 export const interactions: Interaction[] = [
   {
     type: 'email',
+    direction: 'in',
     date: '5. 3. 2026',
     relativeDate: '35 dní',
     description: 'Reklamace vyúčtování HAV · IPEX-2025-0042',
@@ -195,6 +289,7 @@ export const interactions: Interaction[] = [
   },
   {
     type: 'hovor',
+    direction: 'in',
     date: '12. 1. 2026',
     relativeDate: '87 dní',
     description: 'Hlášení škody na vozidle · PU-2026-0001 otevřeno',
@@ -202,36 +297,42 @@ export const interactions: Interaction[] = [
   },
   {
     type: 'web',
+    direction: 'in',
     date: '15. 12. 2025',
     description: 'Kalkulace cestovního pojištění (webová kalkulačka)',
     icon: '🌐',
   },
   {
     type: 'hovor',
+    direction: 'in',
     date: '1. 12. 2025',
     description: 'Obnova POV na rok 2026 · platba přijata',
     icon: '📞',
   },
   {
     type: 'email',
+    direction: 'out',
     date: '15. 11. 2025',
     description: 'Obnova smlouvy HAV č. 4820-2025 · potvrzení',
     icon: '📧',
   },
   {
     type: 'web',
+    direction: 'in',
     date: '2. 11. 2025',
     description: 'Stažení zelené karty POV (PDF)',
     icon: '🌐',
   },
   {
     type: 'hovor',
+    direction: 'in',
     date: '10. 10. 2025',
     description: 'Dotaz na asistenční služby v rámci HAV krytí',
     icon: '📞',
   },
   {
     type: 'email',
+    direction: 'out',
     date: '5. 9. 2025',
     description: 'Změna korespondenční adresy · potvrzeno',
     icon: '📧',
@@ -250,6 +351,12 @@ export const claims: Claim[] = [
     icon: '🚗',
     risk: 'Havarijní pojištění',
     status: 'aktivní',
+    statusBadge: 'Čeká na dokumenty',
+    datumVzniku: '5. 1. 2026',
+    datumHlášení: '12. 1. 2026',
+    relativeDays: 14,
+    roleKlienta: 'Pojištěný',
+    nehodovýDěj: 'Klientce bylo poškozeno zaparkované vozidlo na parkovišti OC Chodov. Viník neznámý, vzkaz zanechán na vozidle.',
     limitPlnění: '500 000 Kč',
     spoluÚčast: '10 000 Kč',
   },
@@ -259,6 +366,12 @@ export const claims: Claim[] = [
     icon: '🚗',
     risk: 'Povinné ručení',
     status: 'neaktivní',
+    statusBadge: 'Uzavřená',
+    datumVzniku: '28. 12. 2025',
+    datumHlášení: '5. 1. 2026',
+    datumUzavření: '15. 2. 2026',
+    roleKlienta: 'Pojištěný',
+    nehodovýDěj: 'Klientka způsobila náraz do zaparkovaného vozidla při vycouvání. Škoda na třetím vozidle uhrazena z POV.',
   },
   {
     id: 'PU-2024-0089',
@@ -266,6 +379,12 @@ export const claims: Claim[] = [
     icon: '🏠',
     risk: 'Pojištění domácnosti',
     status: 'zamítnutá',
+    statusBadge: 'Zamítnutá',
+    datumVzniku: '10. 8. 2025',
+    datumHlášení: '22. 8. 2025',
+    datumUzavření: '15. 10. 2025',
+    roleKlienta: 'Pojištěný',
+    nehodovýDěj: 'Škoda způsobena přetékající vodou ze sousedního bytu. Zamítnuto pro nesplnění dokladovacích podmínek.',
   },
 ];
 
@@ -275,17 +394,24 @@ export const calculations: Calculation[] = [
     detail: 'Rodinné pojištění · Schengen + mimo EU',
     price: '3 800 Kč/rok',
     date: '9. 4. 2026',
+    time: '14:32',
+    relativeDays: 23,
     isCurrent: true,
+    vehicleInfo: 'Rodina 2+2 · Schengen + mimo EU · 30 dní',
+    selectedRisks: ['Léčebné výlohy', 'Storno', 'Zavazadla', 'Úraz'],
+    intermediary: { name: 'Klik.cz', dir: '0200267' },
   },
   {
     product: 'Majetek',
     date: '15. 2. 2026',
+    time: '09:15',
     solver: 'Petr Svoboda',
     isCurrent: false,
   },
   {
     product: 'Mazlíčci',
     date: '3. 1. 2026',
+    time: '16:47',
     solver: 'Lucie Černá',
     isCurrent: false,
   },
@@ -300,100 +426,139 @@ export const companyClient: CompanyClient = {
   ičo: '28452890',
   telefon: '+420 234 567 890',
   email: 'pojisteni@abclogistika.cz',
-  adresa: 'Průmyslová 12, Praha 9, 190 00',
+  trvaléBydliště: 'Průmyslová 12, Praha 9, 190 00',
   čísloKlienta: 'KL-F-2020-00042',
   kontaktníOsoba: 'Mgr. Tomáš Beneš',
   roleKontaktu: 'Jednatel',
   telVerified: true,
   emailVerified: true,
+  aktivníApp: false,
+  klientskáZóna: true,
 };
 
 export const companyProducts: Product[] = [
   {
+    type: 'FLEET',
     name: 'Flotila',
-    description: 'Havarijní pojištění · 20 vozidel (MAN, Scania, Ford)',
+    description: '20 vozidel (MAN, Scania, Ford)',
     contractNumber: 'SML-F-2023-0112',
     status: 'aktivní',
-    výročí: '1. 1. 2027',
+    začátekSmlouvy: '1. 1. 2023',
     platba: 'zaplaceno',
     limitPlnění: '5 000 000 Kč',
     spoluÚčast: '10 000 Kč',
+    risks: ['Povinné ručení', 'Havarijní pojištění', 'Pojištění skel', 'Asistence vozidla'],
+    riskDetails: [
+      { name: 'Povinné ručení',     limitPlnění: '35 000 000 Kč', spoluÚčast: '0 Kč',      datumSjednání: '1. 1. 2023' },
+      { name: 'Havarijní pojištění', limitPlnění: '5 000 000 Kč',  spoluÚčast: '10 000 Kč', datumSjednání: '1. 1. 2023' },
+      { name: 'Pojištění skel',      limitPlnění: '30 000 Kč',     spoluÚčast: '0 Kč',      datumSjednání: '1. 1. 2023' },
+      { name: 'Asistence vozidla',   limitPlnění: '—',              spoluÚčast: '0 Kč',      datumSjednání: '1. 1. 2023' },
+    ],
   },
   {
-    name: 'Flotila',
-    description: 'Povinné ručení · 20 vozidel',
-    contractNumber: 'SML-F-2023-0113',
-    status: 'aktivní',
-    výročí: '1. 1. 2027',
-    platba: 'zaplaceno',
-    limitPlnění: '35 000 000 Kč',
-    spoluÚčast: '0 Kč',
-  },
-  {
+    type: 'BUD',
     name: 'Budovy',
-    description: 'Pojištění budov · Průmyslová 12 + sklad Hostivař',
+    description: 'Průmyslová 12 + sklad Hostivař',
     contractNumber: 'SML-F-2021-0567',
     status: 'aktivní',
-    výročí: '15. 6. 2026',
+    začátekSmlouvy: '15. 6. 2021',
     platba: 'zaplaceno',
     limitPlnění: '45 000 000 Kč',
     spoluÚčast: '50 000 Kč',
+    risks: ['Požár a výbuch', 'Živelné pohromy', 'Voda z potrubí', 'Vloupání'],
+    riskDetails: [
+      { name: 'Požár a výbuch',     limitPlnění: '45 000 000 Kč', spoluÚčast: '50 000 Kč', datumSjednání: '15. 6. 2021' },
+      { name: 'Živelné pohromy',    limitPlnění: '45 000 000 Kč', spoluÚčast: '50 000 Kč', datumSjednání: '15. 6. 2021' },
+      { name: 'Voda z potrubí',     limitPlnění: '10 000 000 Kč', spoluÚčast: '20 000 Kč', datumSjednání: '15. 6. 2021' },
+      { name: 'Vloupání a vandalismus', limitPlnění: '5 000 000 Kč', spoluÚčast: '10 000 Kč', datumSjednání: '15. 6. 2021' },
+    ],
   },
   {
+    type: 'ZÁS',
     name: 'Zásoby',
     description: 'Pojištění zásob · sklad Hostivař',
     contractNumber: 'SML-F-2021-0568',
     status: 'aktivní',
-    výročí: '15. 6. 2026',
+    začátekSmlouvy: '15. 6. 2021',
     platba: 'nezaplaceno',
     limitPlnění: '8 000 000 Kč',
     spoluÚčast: '20 000 Kč',
+    risks: ['Zásoby – živelné', 'Zásoby – krádež'],
+    riskDetails: [
+      { name: 'Zásoby – živelné pohromy', limitPlnění: '8 000 000 Kč', spoluÚčast: '20 000 Kč', datumSjednání: '15. 6. 2021' },
+      { name: 'Zásoby – krádež',          limitPlnění: '3 000 000 Kč', spoluÚčast: '10 000 Kč', datumSjednání: '15. 6. 2021' },
+    ],
   },
   {
+    type: 'ODP',
     name: 'Odpovědnost za újmu',
     description: 'Obecná odpovědnost firmy · rozsah CZ + EU',
     contractNumber: 'SML-F-2022-0234',
     status: 'aktivní',
-    výročí: '28. 2. 2027',
+    začátekSmlouvy: '28. 2. 2022',
     platba: 'zaplaceno',
     limitPlnění: '20 000 000 Kč',
     spoluÚčast: '10 000 Kč',
+    risks: ['Obecná odpovědnost', 'Zaměstnanecká odpovědnost'],
+    riskDetails: [
+      { name: 'Obecná odpovědnost',       limitPlnění: '20 000 000 Kč', spoluÚčast: '10 000 Kč', datumSjednání: '28. 2. 2022' },
+      { name: 'Zaměstnanecká odpovědnost', limitPlnění: '5 000 000 Kč', spoluÚčast: '5 000 Kč',  datumSjednání: '28. 2. 2022' },
+    ],
   },
   {
+    type: 'BI',
     name: 'Přerušení provozu',
     description: 'BI pojištění · navázáno na smlouvy budov',
     contractNumber: 'SML-F-2021-0569',
     status: 'aktivní',
-    výročí: '15. 6. 2026',
+    začátekSmlouvy: '15. 6. 2021',
     platba: 'zaplaceno',
     limitPlnění: '15 000 000 Kč',
     spoluÚčast: '5 000 Kč',
+    risks: ['Přerušení provozu'],
+    riskDetails: [
+      { name: 'Přerušení provozu', limitPlnění: '15 000 000 Kč', spoluÚčast: '5 000 Kč', datumSjednání: '15. 6. 2021' },
+    ],
   },
   {
+    type: 'EL',
     name: 'Elektronika a vybavení',
     description: 'IT vybavení, servery, kancelářská technika',
     contractNumber: 'SML-F-2020-0891',
     status: 'neaktivní',
-    výročí: '31. 12. 2024',
+    začátekSmlouvy: '1. 1. 2020',
     platba: 'vypršelo',
     limitPlnění: '2 000 000 Kč',
     spoluÚčast: '5 000 Kč',
+    risks: ['Elektronika', 'Strojní zařízení'],
+    riskDetails: [
+      { name: 'Elektronika',       limitPlnění: '2 000 000 Kč', spoluÚčast: '5 000 Kč', datumSjednání: '1. 1. 2020' },
+      { name: 'Strojní zařízení',  limitPlnění: '1 000 000 Kč', spoluÚčast: '5 000 Kč', datumSjednání: '1. 1. 2020' },
+    ],
   },
   {
+    type: 'TRAVEL',
     name: 'Cestovní pro zaměstnance',
     description: 'Skupinové cestovní pojištění · 45 zaměstnanců',
     contractNumber: 'SML-F-2023-0445',
     status: 'aktivní',
-    výročí: '1. 3. 2027',
+    začátekSmlouvy: '1. 3. 2023',
     platba: 'zaplaceno',
     limitPlnění: '5 000 000 Kč',
     spoluÚčast: '0 Kč',
+    risks: ['Léčebné výlohy', 'Úraz', 'Storno'],
+    riskDetails: [
+      { name: 'Léčebné výlohy', limitPlnění: '5 000 000 Kč', spoluÚčast: '0 Kč', datumSjednání: '1. 3. 2023' },
+      { name: 'Úraz',           limitPlnění: '1 000 000 Kč', spoluÚčast: '0 Kč', datumSjednání: '1. 3. 2023' },
+      { name: 'Storno cesty',   limitPlnění: '50 000 Kč',    spoluÚčast: '0 Kč', datumSjednání: '1. 3. 2023' },
+    ],
   },
 ];
 
 export const companyInteractions: Interaction[] = [
   {
     type: 'email',
+    direction: 'in',
     date: '2. 4. 2026',
     relativeDate: '7 dní',
     description: 'Reklamace faktury za Zásoby · SML-F-2021-0568',
@@ -401,6 +566,7 @@ export const companyInteractions: Interaction[] = [
   },
   {
     type: 'hovor',
+    direction: 'in',
     date: '15. 3. 2026',
     relativeDate: '25 dní',
     description: 'Přihlášení nového vozidla do flotily · Scania R450',
@@ -408,12 +574,14 @@ export const companyInteractions: Interaction[] = [
   },
   {
     type: 'hovor',
+    direction: 'out',
     date: '10. 2. 2026',
     description: 'Obnova smluv Budovy + Zásoby + BI na rok 2026',
     icon: '📞',
   },
   {
     type: 'email',
+    direction: 'out',
     date: '5. 1. 2026',
     description: 'Zaslání certifikátů pojištění pro audit',
     icon: '📧',
@@ -431,6 +599,12 @@ export const companyClaims: Claim[] = [
     icon: '🚛',
     risk: 'Havarijní pojištění flotily',
     status: 'aktivní',
+    statusBadge: 'Otevřená',
+    datumVzniku: '20. 4. 2026',
+    datumHlášení: '25. 4. 2026',
+    relativeDays: 7,
+    roleKlienta: 'Pojištěný',
+    nehodovýDěj: 'Vozidlo Scania R450 poškozeno při couvání na rampě skladu Hostivař. Rozsah: zadní nárazník a levé bočnice.',
     limitPlnění: '5 000 000 Kč',
     spoluÚčast: '10 000 Kč',
   },
@@ -440,6 +614,12 @@ export const companyClaims: Claim[] = [
     icon: '🏭',
     risk: 'Pojištění budov',
     status: 'neaktivní',
+    statusBadge: 'Uzavřená',
+    datumVzniku: '10. 11. 2025',
+    datumHlášení: '14. 11. 2025',
+    datumUzavření: '20. 12. 2025',
+    roleKlienta: 'Pojištěný',
+    nehodovýDěj: 'Záplava ve skladu Hostivař způsobena prasklým vodovodním potrubím. Škoda na skladových zásobách.',
   },
 ];
 
@@ -451,88 +631,103 @@ export const brokerClient: BrokerClientInfo = {
   name: 'Pavel Kratochvíl',
   čísloBrokera: 'MK-2019-00145',
   telefon: '+420 775 123 456',
-  email: 'p.kratochvil@pojistovaci.cz',
-  adresa: 'Náměstí Míru 8, Praha 2, 120 00',
+  trvaléBydliště: 'Náměstí Míru 8, Praha 2, 120 00',
   telVerified: true,
   emailVerified: false,
+  // email intentionally omitted — broker has no email on file
 };
 
 export const brokerProducts: BrokerProduct[] = [
   {
     clientName: 'Jana Procházková',
     clientNumber: 'KL-2024-00445',
+    type: 'AUTO',
     name: 'Vozidla',
     description: 'Havarijní pojištění · Ford Focus 1A5 6789',
     contractNumber: 'SML-2024-5102',
     status: 'aktivní',
-    výročí: '3. 8. 2026',
+    začátekSmlouvy: '3. 8. 2024',
     platba: 'zaplaceno',
+    risks: ['Havarijní pojištění', 'Asistence vozidla'],
   },
   {
     clientName: 'Jana Procházková',
     clientNumber: 'KL-2024-00445',
+    type: 'MAJ',
     name: 'Majetek',
     description: 'Pojištění domácnosti · Čechova 5, Brno',
     contractNumber: 'SML-2023-3302',
     status: 'aktivní',
-    výročí: '20. 5. 2026',
+    začátekSmlouvy: '20. 5. 2023',
     platba: 'nezaplaceno',
+    risks: ['Domácnost', 'Odpovědnost'],
   },
   {
     clientName: 'Tech Solutions s.r.o.',
     clientNumber: 'KL-F-2023-0012',
+    type: 'FLEET',
     name: 'Flotila',
     description: 'Havarijní pojištění · 5 vozidel',
     contractNumber: 'SML-F-2023-0889',
     status: 'aktivní',
-    výročí: '1. 11. 2026',
+    začátekSmlouvy: '1. 11. 2023',
     platba: 'zaplaceno',
+    risks: ['Povinné ručení', 'Havarijní pojištění'],
   },
   {
     clientName: 'Tech Solutions s.r.o.',
     clientNumber: 'KL-F-2023-0012',
+    type: 'ODP',
     name: 'Odpovědnost za újmu',
     description: 'Odpovědnost IT firmy · CZ + SK',
     contractNumber: 'SML-F-2023-0890',
     status: 'aktivní',
-    výročí: '1. 11. 2026',
+    začátekSmlouvy: '1. 11. 2023',
     platba: 'zaplaceno',
+    risks: ['Obecná odpovědnost', 'Kybernetická odpovědnost'],
   },
   {
     clientName: 'Karel Novotný',
     clientNumber: 'KL-2022-01234',
+    type: 'AUTO',
     name: 'Vozidla',
     description: 'Povinné ručení · VW Golf 3B4 5612',
     contractNumber: 'SML-2022-1234',
     status: 'aktivní',
-    výročí: '12. 12. 2026',
+    začátekSmlouvy: '12. 12. 2022',
     platba: 'zaplaceno',
+    risks: ['Povinné ručení'],
   },
   {
     clientName: 'Eva Horáková',
     clientNumber: 'KL-2023-00678',
+    type: 'TRAVEL',
     name: 'Cestovní',
     description: 'Individuální cestovní pojištění · Svět',
     contractNumber: 'SML-2023-0678',
     status: 'aktivní',
-    výročí: '30. 9. 2026',
+    začátekSmlouvy: '30. 9. 2023',
     platba: 'zaplaceno',
+    risks: ['Léčebné výlohy', 'Úraz', 'Storno'],
   },
   {
     clientName: 'Eva Horáková',
     clientNumber: 'KL-2023-00678',
+    type: 'MAZL',
     name: 'Mazlíčci',
     description: 'Pojištění kočky · Britská krátkosrstá, Sněhulka',
     contractNumber: 'SML-2023-0679',
     status: 'neaktivní',
-    výročí: '30. 9. 2025',
+    začátekSmlouvy: '30. 9. 2023',
     platba: 'vypršelo',
+    risks: ['Veterinární péče'],
   },
 ];
 
 export const brokerInteractions: Interaction[] = [
   {
     type: 'hovor',
+    direction: 'in',
     date: '1. 4. 2026',
     relativeDate: '8 dní',
     description: 'Dotaz k obnově smlouvy Jana Procházková · Majetek',
@@ -540,6 +735,7 @@ export const brokerInteractions: Interaction[] = [
   },
   {
     type: 'email',
+    direction: 'in',
     date: '15. 3. 2026',
     relativeDate: '25 dní',
     description: 'Předání nového klienta Karel Novotný · POV',
@@ -547,9 +743,68 @@ export const brokerInteractions: Interaction[] = [
   },
   {
     type: 'email',
+    direction: 'out',
     date: '2. 2. 2026',
     description: 'Komisionářský výkaz leden 2026',
     icon: '📧',
+  },
+];
+
+// ─── Standard No-Email Client (Tomáš Kovář — no email on file) ───────────────
+
+export const standardNoEmailClient: Client = {
+  type: 'standard',
+  status: 'aktivní',
+  name: 'Tomáš Kovář',
+  datumNarození: '12. 4. 1979',
+  rodneČíslo: '790412/5678',
+  telefon: '+420 724 111 222',
+  // email intentionally omitted — testing no-email display
+  trvaléBydliště: 'Korunní 18, Praha 2, 120 00',
+  čísloKlienta: 'KL-2023-00344',
+  telVerified: true,
+  emailVerified: false,
+  aktivníApp: false,
+  klientskáZóna: true,
+};
+
+// ─── Standard Auto Client (Marek Procházka — Poradce + auto calc) ─────────────
+
+export const standardAutoClient: Client = {
+  type: 'standard',
+  status: 'aktivní',
+  name: 'Marek Procházka',
+  datumNarození: '8. 9. 1990',
+  rodneČíslo: '900908/1234',
+  telefon: '+420 601 987 654',
+  email: 'marek.prochazka@gmail.com',
+  trvaléBydliště: 'Budějovická 4, Praha 4, 140 00',
+  čísloKlienta: 'KL-2025-01122',
+  telVerified: true,
+  emailVerified: false,
+  aktivníApp: true,
+  klientskáZóna: false,
+};
+
+export const autoCalculations: Calculation[] = [
+  {
+    product: 'Vozidla',
+    detail: 'Havarijní pojištění · VW Golf 8 · 1BX 2345',
+    price: '14 200 Kč/rok',
+    date: '2. 5. 2026',
+    time: '10:15',
+    relativeDays: 13,
+    isCurrent: true,
+    vehicleInfo: 'VW Golf 8 · 2022 · 1BX 2345',
+    selectedRisks: ['Havarijní pojištění', 'Povinné ručení', 'Pojištění skel', 'Asistence vozidla'],
+    intermediary: { name: 'Tomáš Veselý', dir: '0500451' },
+  },
+  {
+    product: 'Cestovní',
+    date: '10. 3. 2026',
+    time: '14:20',
+    solver: 'Tomáš Veselý',
+    isCurrent: false,
   },
 ];
 
@@ -643,13 +898,25 @@ export const hints: Hint[] = [
 
 // ─── After Call ───────────────────────────────────────────────────────────────
 
-export const summaryText = `Klientka Jana Nováková (KL-2024-00891) volala ohledně hlášení pojistné události na vozidle Škoda Octavia 4A2 3456. Nehoda se stala dne 5. 1. 2026 na parkovišti OC Chodov, Praha 4 — poškozeny levé zadní dveře a blatník, viník neznámý. Klientce bylo přiděleno číslo PU-2026-0051. Informována o zaslání fotodokumentace na likvidace@direct.cz do 5 pracovních dní. Upozorněna na dlužnou splátku pojistky mazlíčků (320 Kč, splatnost 1. 3. 2026).`;
+export const summaryText = `**Role volajícího:** Pojištěný · **Tel:** +420 602 345 678\n\nKlientka Jana Nováková (KL-2024-00891) volala ohledně hlášení pojistné události na vozidle Škoda Octavia 4A2 3456. Nehoda se stala dne 5. 1. 2026 na parkovišti OC Chodov, Praha 4 — poškozeny levé zadní dveře a blatník, viník neznámý. Klientce bylo přiděleno číslo PU-2026-0051. **Doložit** fotodokumentaci na likvidace@direct.cz do 5 pracovních dní. **Zavolat** zpět při průtazích likvidace. Upozorněna na dlužnou splátku pojistky mazlíčků (320 Kč, splatnost 1. 3. 2026) — **čekáme na** úhradu.`;
 
-export const zzjText = `Datum: 9. 4. 2026 | Operátor: Petr Svoboda | Klient: Jana Nováková (KL-2024-00891)
-Předmět: Hlášení pojistné události — Vozidla HAV
-Popis: Klientka nahlásila škodu na vozidle Škoda Octavia (4A2 3456). Datum škody: 5. 1. 2026. Místo: parkoviště OC Chodov, Praha 4. Poškození: levé zadní dveře, zadní blatník. Viník: neznámý (klientka nalezla poškozené vozidlo).
-Akce: Zal. PU-2026-0051. Klientka zašle foto na likvidace@direct.cz do 14. 4. 2026. Upozorněna na dlužnou splátku Mazlíčci (320 Kč).
-Stav: Čeká na fotodokumentaci.`;
+export const summaryRole = 'Pojištěný';
+export const summaryPhone = '+420 602 345 678';
+
+export const zzjSections: { label: string; content: string }[] = [
+  {
+    label: 'Požadavky klienta',
+    content: `Klientka nahlásila pojistnou událost na vozidle Škoda Octavia (4A2 3456). Datum škody: 5. 1. 2026. Místo: parkoviště OC Chodov, Praha 4. Poškození: levé zadní dveře, zadní blatník. Viník: neznámý (klientka nalezla poškozené vozidlo). Zal. PU-2026-0051. Klientka zašle foto na likvidace@direct.cz do 14. 4. 2026.`,
+  },
+  {
+    label: 'Doporučená a zmíněná rizika',
+    content: `Aktivní smlouva AUTO SML-2024-4820 pokrývá HAV i POV — obě rizika relevantní ke škodní události. Klientce nabídnuta kalkulace MAJ (domácnost Vinohradská 42, Praha 2 — pojistka vypršela 10. 1. 2025). Upozornění na dlužnou splátku MAZL SML-2023-2190 (320 Kč, do 31. 3. 2026).`,
+  },
+  {
+    label: 'Nesrovnalosti',
+    content: `Klientka nemá dosud uhrazenou splátku za pojistku mazlíčků (320 Kč, splatnost 1. 3. 2026). Hrozí deaktivace do 31. 3. 2026. Otevřený ticket IPEX-2025-0042 (reklamace HAV) čeká na odpověď back-office.`,
+  },
+];
 
 // ─── Queue Mappings ───────────────────────────────────────────────────────────
 

@@ -28,7 +28,7 @@ export function SkillMatrix() {
   const cols = `1fr ${productColumns.map(() => '80px').join(' ')}`;
 
   return (
-    <div className="pt-16 pb-6 px-6 max-w-[1400px] mx-auto animate-fade-in">
+    <div className="pt-16 pb-6 px-4 lg:px-6 max-w-[1400px] mx-auto animate-fade-in">
       <div className="mb-6">
         <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1">Admin Panel</p>
         <h1 className="text-3xl font-extrabold text-direct-800">Skill Matice</h1>
@@ -36,7 +36,7 @@ export function SkillMatrix() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-4 mb-5">
+      <div className="flex flex-wrap items-center gap-3 mb-5">
         <div className="flex gap-1">
           {(['all', 'KC', 'KAPU', 'Poradci'] as const).map(t => (
             <button
@@ -77,7 +77,8 @@ export function SkillMatrix() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-card overflow-hidden">
+      <div className="overflow-x-auto rounded-xl shadow-card">
+      <div className="bg-white min-w-max rounded-xl overflow-hidden">
         <div className="grid bg-gray-25" style={{ gridTemplateColumns: cols }}>
           <div className="px-5 py-3">
             <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Operátor</span>
@@ -125,6 +126,7 @@ export function SkillMatrix() {
         {filtered.length === 0 && (
           <div className="px-5 py-10 text-center text-sm text-gray-400">Žádní operátoři.</div>
         )}
+      </div>
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ import type { ReactNode } from 'react';
 
 export type Role       = 'operator' | 'admin';
 export type Team       = 'Poradce' | 'KC' | 'KAPU';
-export type ClientType = 'standard' | 'company' | 'broker' | 'unknown';
+export type ClientType = 'standard' | 'company' | 'broker' | 'unknown' | 'ambiguous';
 
 export const TEAM_LABELS: Record<Team, string> = {
   Poradce: 'Poradce',
@@ -27,21 +27,24 @@ export const TEAM_LABELS: Record<Team, string> = {
 };
 
 export const CLIENT_TYPE_LABELS: Record<ClientType, string> = {
-  standard: 'Standardní klient',
-  company:  'Firma',
-  broker:   'Makléř',
-  unknown:  'Neznámý',
+  standard:  'Standardní klient',
+  company:   'Firma',
+  broker:    'Makléř',
+  unknown:   'Neznámý',
+  ambiguous: 'Nejasný (více shod)',
 };
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
 interface DashboardContextValue {
-  role:            Role;
-  team:            Team;
-  clientType:      ClientType;
-  setRole:         (r: Role) => void;
-  setTeam:         (t: Team) => void;
-  setClientType:   (ct: ClientType) => void;
+  role:              Role;
+  team:              Team;
+  clientType:        ClientType;
+  mockClientId:      string;
+  setRole:           (r: Role) => void;
+  setTeam:           (t: Team) => void;
+  setClientType:     (ct: ClientType) => void;
+  setMockClientId:   (id: string) => void;
 }
 
 const DashboardContext = createContext<DashboardContextValue | null>(null);
@@ -49,12 +52,13 @@ const DashboardContext = createContext<DashboardContextValue | null>(null);
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function DashboardProvider({ children }: { children: ReactNode }) {
-  const [role,       setRole]       = useState<Role>('operator');
-  const [team,       setTeam]       = useState<Team>('KC');
-  const [clientType, setClientType] = useState<ClientType>('standard');
+  const [role,         setRole]         = useState<Role>('operator');
+  const [team,         setTeam]         = useState<Team>('KC');
+  const [clientType,   setClientType]   = useState<ClientType>('standard');
+  const [mockClientId, setMockClientId] = useState<string>('standard');
 
   return (
-    <DashboardContext.Provider value={{ role, team, clientType, setRole, setTeam, setClientType }}>
+    <DashboardContext.Provider value={{ role, team, clientType, mockClientId, setRole, setTeam, setClientType, setMockClientId }}>
       {children}
     </DashboardContext.Provider>
   );

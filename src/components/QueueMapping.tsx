@@ -22,9 +22,9 @@ export function QueueMapping() {
   };
 
   return (
-    <div className="pt-16 pb-8 px-6 max-w-[1400px] mx-auto animate-fade-in">
+    <div className="pt-16 pb-8 px-4 lg:px-6 max-w-[1400px] mx-auto animate-fade-in">
       {/* Header */}
-      <div className="flex items-end justify-between mb-6">
+      <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
         <div>
           <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-1">Admin Panel</p>
           <h1 className="text-3xl font-extrabold text-direct-800">Mapování front</h1>
@@ -42,7 +42,8 @@ export function QueueMapping() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl shadow-card overflow-hidden">
+      <div className="overflow-x-auto rounded-2xl shadow-card">
+      <div className="bg-white min-w-[640px] rounded-2xl overflow-hidden">
         {/* Table header */}
         <div className="grid grid-cols-[200px_1fr_1fr_100px_72px] bg-gray-25 px-5 py-3 border-b border-gray-50">
           <div><span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Skill</span></div>
@@ -153,6 +154,7 @@ export function QueueMapping() {
         {skills.length === 0 && (
           <div className="px-5 py-12 text-center text-sm text-gray-400">Žádné skilly.</div>
         )}
+      </div>
       </div>
 
       {/* Summary footer */}
