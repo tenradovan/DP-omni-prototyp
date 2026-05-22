@@ -11,6 +11,8 @@ import {
 import type { Hint, Interaction, Product, BrokerProduct, Claim, Calculation, ClientStatus, RiskDetail } from '../data/mockData';
 import type { Screen } from '../App';
 import { CalculationsSection } from './shared/CalculationsSection';
+import { InfoTooltip } from './ui/InfoTooltip';
+import { glossary } from '../data/glossary';
 
 interface DuringCallProps {
   onNavigate: (screen: Screen) => void;
@@ -49,13 +51,16 @@ function claimStatusCls(s: string): string {
 
 // ─── Micro-components ─────────────────────────────────────────────────────────
 
-function VerifiedBadge() {
+function VerifiedBadge({ type = 'generic' }: { type?: 'tel' | 'email' | 'generic' }) {
+  const msg = type === 'tel' ? glossary.verifiedTel : type === 'email' ? glossary.verifiedEmail : glossary.verified;
   return (
-    <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-lime-500 ml-0.5 shrink-0" title="Ověřeno">
-      <svg className="w-1.5 h-1.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3.5} d="M5 13l4 4L19 7" />
-      </svg>
-    </span>
+    <InfoTooltip content={msg}>
+      <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-lime-500 ml-0.5 shrink-0 cursor-help">
+        <svg className="w-1.5 h-1.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3.5} d="M5 13l4 4L19 7" />
+        </svg>
+      </span>
+    </InfoTooltip>
   );
 }
 
@@ -211,15 +216,31 @@ function ProductCard({ p, showKAPU }: { p: Product; showKAPU: boolean }) {
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
               <p className={`text-sm font-bold leading-tight ${p.status === 'neaktivní' ? 'text-gray-400' : 'text-direct-800'}`}>
-                {p.type}
+                {glossary[p.type] ? (
+                  <InfoTooltip content={glossary[p.type]}>
+                    <span className="cursor-help border-b border-dotted border-current/40">{p.type}</span>
+                  </InfoTooltip>
+                ) : p.type}
                 {p.contractNumber && <span className="font-normal text-gray-500 text-xs ml-1.5">{p.contractNumber}</span>}
               </p>
               <p className="text-xs text-gray-500 leading-tight mt-0.5 truncate">{p.description}</p>
             </div>
             <div className="shrink-0 flex items-center gap-1.5">
-              {p.platba === 'zaplaceno'   && <span className="px-2 py-0.5 rounded-full bg-direct-25 text-direct-600 text-xs font-semibold">OK</span>}
-              {p.platba === 'nezaplaceno' && <span className="px-2 py-0.5 rounded-full bg-err-container text-err text-xs font-semibold">DLUH</span>}
-              {p.platba === 'vypršelo'    && <span className="text-xs text-gray-300 font-medium">Vypršelo</span>}
+              {p.platba === 'zaplaceno'   && (
+                <InfoTooltip content={glossary.OK}>
+                  <span className="px-2 py-0.5 rounded-full bg-direct-25 text-direct-600 text-xs font-semibold cursor-help">OK</span>
+                </InfoTooltip>
+              )}
+              {p.platba === 'nezaplaceno' && (
+                <InfoTooltip content={glossary.DLUH}>
+                  <span className="px-2 py-0.5 rounded-full bg-err-container text-err text-xs font-semibold cursor-help">DLUH</span>
+                </InfoTooltip>
+              )}
+              {p.platba === 'vypršelo'    && (
+                <InfoTooltip content={glossary.Vypršelo}>
+                  <span className="text-xs text-gray-300 font-medium cursor-help">Vypršelo</span>
+                </InfoTooltip>
+              )}
               <svg className={`w-3.5 h-3.5 text-gray-300 transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
@@ -236,7 +257,16 @@ function ProductCard({ p, showKAPU }: { p: Product; showKAPU: boolean }) {
             </div>
           )}
           {showKAPU && p.limitPlnění && (
-            <p className="text-[11px] text-gray-500 mt-1">Limit: {p.limitPlnění} · Spoluúčast: {p.spoluÚčast}</p>
+            <p className="text-[11px] text-gray-500 mt-1">
+              <InfoTooltip content={glossary.limitPlnění}>
+                <span className="cursor-help border-b border-dotted border-current/40">Limit</span>
+              </InfoTooltip>
+              : {p.limitPlnění} ·{' '}
+              <InfoTooltip content={glossary.spoluÚčast}>
+                <span className="cursor-help border-b border-dotted border-current/40">Spoluúčast</span>
+              </InfoTooltip>
+              : {p.spoluÚčast}
+            </p>
           )}
         </div>
       </div>
@@ -249,9 +279,21 @@ function ProductCard({ p, showKAPU }: { p: Product; showKAPU: boolean }) {
               <thead>
                 <tr className="text-gray-400 uppercase tracking-wider">
                   <th className="text-left pb-1.5 font-medium text-[10px]">Riziko</th>
-                  <th className="text-right pb-1.5 font-medium text-[10px]">Limit plnění</th>
-                  <th className="text-right pb-1.5 font-medium text-[10px]">Spoluúčast</th>
-                  <th className="text-right pb-1.5 font-medium text-[10px] hidden lg:table-cell">Sjednáno</th>
+                  <th className="text-right pb-1.5 font-medium text-[10px]">
+                    <InfoTooltip content={glossary.limitPlnění}>
+                      <span className="cursor-help border-b border-dotted border-current/40">Limit plnění</span>
+                    </InfoTooltip>
+                  </th>
+                  <th className="text-right pb-1.5 font-medium text-[10px]">
+                    <InfoTooltip content={glossary.spoluÚčast}>
+                      <span className="cursor-help border-b border-dotted border-current/40">Spoluúčast</span>
+                    </InfoTooltip>
+                  </th>
+                  <th className="text-right pb-1.5 font-medium text-[10px] hidden lg:table-cell">
+                    <InfoTooltip content={glossary.datumSjednání}>
+                      <span className="cursor-help border-b border-dotted border-current/40">Sjednáno</span>
+                    </InfoTooltip>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100/60">
@@ -323,7 +365,9 @@ function ClaimsSection({ claimList, isKAPU = false }: { claimList: Claim[]; isKA
                   <div className="flex items-center gap-1.5 shrink-0">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${claimStatusCls(c.statusBadge)}`}>{c.statusBadge}</span>
                     {c.relativeDays !== undefined && (
-                      <span className="px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-bold">{c.relativeDays}d</span>
+                      <InfoTooltip content={glossary.relativeDays}>
+                        <span className="px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-bold cursor-help">{c.relativeDays}d</span>
+                      </InfoTooltip>
                     )}
                     <svg className={`w-3.5 h-3.5 text-gray-300 transition-transform ${isExpanded ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -349,16 +393,22 @@ function ClaimsSection({ claimList, isKAPU = false }: { claimList: Claim[]; isKA
                 <div className="border-t border-direct-100 px-3.5 pt-2.5 pb-3 animate-fade-in" onClick={e => e.stopPropagation()}>
                   <div className="grid grid-cols-3 gap-3 mb-2">
                     <div>
-                      <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5 font-medium">Datum vzniku</p>
+                      <InfoTooltip content={glossary.datumVzniku} side="bottom">
+                        <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5 font-medium cursor-help inline-block border-b border-dotted border-gray-300">Datum vzniku</p>
+                      </InfoTooltip>
                       <p className="text-xs font-semibold text-direct-800">{c.datumVzniku}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5 font-medium">Datum hlášení</p>
+                      <InfoTooltip content={glossary.datumHlášení} side="bottom">
+                        <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5 font-medium cursor-help inline-block border-b border-dotted border-gray-300">Datum hlášení</p>
+                      </InfoTooltip>
                       <p className="text-xs font-semibold text-direct-800">{c.datumHlášení}</p>
                     </div>
                     {c.datumUzavření && (
                       <div>
-                        <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5 font-medium">Uzavřeno</p>
+                        <InfoTooltip content={glossary.datumUzavření} side="bottom">
+                          <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5 font-medium cursor-help inline-block border-b border-dotted border-gray-300">Uzavřeno</p>
+                        </InfoTooltip>
                         <p className="text-xs font-semibold text-direct-800">{c.datumUzavření}</p>
                       </div>
                     )}
@@ -366,11 +416,15 @@ function ClaimsSection({ claimList, isKAPU = false }: { claimList: Claim[]; isKA
                   {c.limitPlnění && (
                     <div className="flex items-center gap-4 pt-2 border-t border-direct-100/60">
                       <div>
-                        <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5 font-medium">Limit plnění</p>
+                        <InfoTooltip content={glossary.limitPlnění} side="bottom">
+                          <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5 font-medium cursor-help inline-block border-b border-dotted border-gray-300">Limit plnění</p>
+                        </InfoTooltip>
                         <p className="text-xs font-semibold text-direct-800">{c.limitPlnění}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5 font-medium">Spoluúčast</p>
+                        <InfoTooltip content={glossary.spoluÚčast} side="bottom">
+                          <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-0.5 font-medium cursor-help inline-block border-b border-dotted border-gray-300">Spoluúčast</p>
+                        </InfoTooltip>
                         <p className="text-xs font-semibold text-direct-800">{c.spoluÚčast}</p>
                       </div>
                     </div>
@@ -608,30 +662,30 @@ export function DuringCall({ onNavigate }: DuringCallProps) {
                       ? (activeClient as typeof brokerClient).čísloBrokera
                       : activeClient!.čísloKlienta}
                   </p>
-                  <a href="#" className="text-[9px] text-direct-400 hover:text-direct-600 font-medium flex items-center gap-0.5">
-                    NC ↗
-                  </a>
+                  <InfoTooltip content={glossary.newcoreLink} side="bottom">
+                    <a href="#" className="text-[9px] text-direct-400 hover:text-direct-600 font-medium flex items-center gap-0.5">
+                      NC ↗
+                    </a>
+                  </InfoTooltip>
                   {/* App/zone indicators */}
                   {activeClient!.type !== 'broker' && (() => {
                     const c = activeClient as (typeof client | typeof companyClient);
                     return (
                       <div className="flex items-center gap-0.5">
-                        <span
-                          className={`w-5 h-5 rounded flex items-center justify-center cursor-default ${c.aktivníApp ? 'bg-lime-100 text-green-700' : 'bg-red-50 text-red-400'}`}
-                          title={c.aktivníApp ? 'Mobilní aplikace aktivní' : 'Mobilní aplikace neaktivní'}
-                        >
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                          </svg>
-                        </span>
-                        <span
-                          className={`w-5 h-5 rounded flex items-center justify-center cursor-default ${c.klientskáZóna ? 'bg-lime-100 text-green-700' : 'bg-red-50 text-red-400'}`}
-                          title={c.klientskáZóna ? 'Klientská zóna aktivní' : 'Klientská zóna neaktivní'}
-                        >
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                          </svg>
-                        </span>
+                        <InfoTooltip content={c.aktivníApp ? glossary.aktivníApp : 'Mobilní aplikace Moje Direct — klient ji nemá aktivní'}>
+                          <span className={`w-5 h-5 rounded flex items-center justify-center cursor-help ${c.aktivníApp ? 'bg-lime-100 text-green-700' : 'bg-red-50 text-red-400'}`}>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                          </span>
+                        </InfoTooltip>
+                        <InfoTooltip content={c.klientskáZóna ? glossary.klientskáZóna : 'Klientská zóna direct.cz — klient nemá aktivní přihlášení'}>
+                          <span className={`w-5 h-5 rounded flex items-center justify-center cursor-help ${c.klientskáZóna ? 'bg-lime-100 text-green-700' : 'bg-red-50 text-red-400'}`}>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                            </svg>
+                          </span>
+                        </InfoTooltip>
                       </div>
                     );
                   })()}
@@ -660,7 +714,7 @@ export function DuringCall({ onNavigate }: DuringCallProps) {
                     <p className="text-[9px] uppercase tracking-wider text-gray-400">Tel</p>
                     <div className="flex items-center">
                       <p className="text-sm font-medium text-direct-800">{c.telefon}</p>
-                      {c.telVerified && <VerifiedBadge />}
+                      {c.telVerified && <VerifiedBadge type="tel" />}
                     </div>
                   </div>
                   <div>
@@ -668,7 +722,7 @@ export function DuringCall({ onNavigate }: DuringCallProps) {
                     {c.email ? (
                       <div className="flex items-center">
                         <p className="text-sm font-medium text-direct-800">{c.email}</p>
-                        {c.emailVerified && <VerifiedBadge />}
+                        {c.emailVerified && <VerifiedBadge type="email" />}
                       </div>
                     ) : (
                       <p className="text-sm text-gray-400">— (neuveden)</p>
@@ -696,7 +750,7 @@ export function DuringCall({ onNavigate }: DuringCallProps) {
                     <p className="text-[9px] uppercase tracking-wider text-gray-400">Tel</p>
                     <div className="flex items-center">
                       <p className="text-sm font-medium text-direct-800">{c.telefon}</p>
-                      {c.telVerified && <VerifiedBadge />}
+                      {c.telVerified && <VerifiedBadge type="tel" />}
                     </div>
                   </div>
                   <div>
@@ -704,7 +758,7 @@ export function DuringCall({ onNavigate }: DuringCallProps) {
                     {c.email ? (
                       <div className="flex items-center">
                         <p className="text-sm font-medium text-direct-800">{c.email}</p>
-                        {c.emailVerified && <VerifiedBadge />}
+                        {c.emailVerified && <VerifiedBadge type="email" />}
                       </div>
                     ) : (
                       <p className="text-sm text-gray-400">— (neuveden)</p>
@@ -724,7 +778,7 @@ export function DuringCall({ onNavigate }: DuringCallProps) {
                     <p className="text-[9px] uppercase tracking-wider text-gray-400">Tel</p>
                     <div className="flex items-center">
                       <p className="text-sm font-medium text-direct-800">{c.telefon}</p>
-                      {c.telVerified && <VerifiedBadge />}
+                      {c.telVerified && <VerifiedBadge type="tel" />}
                     </div>
                   </div>
                   <div>
@@ -732,7 +786,7 @@ export function DuringCall({ onNavigate }: DuringCallProps) {
                     {c.email ? (
                       <div className="flex items-center">
                         <p className="text-sm font-medium text-direct-800">{c.email}</p>
-                        {c.emailVerified && <VerifiedBadge />}
+                        {c.emailVerified && <VerifiedBadge type="email" />}
                       </div>
                     ) : (
                       <p className="text-sm text-gray-400">— (neuveden)</p>
@@ -756,13 +810,17 @@ export function DuringCall({ onNavigate }: DuringCallProps) {
           <div className="hidden lg:flex flex-col gap-1 shrink-0 max-w-[140px]">
             <div className="flex items-center gap-1 min-w-0">
               <p className="text-[9px] text-gray-400 shrink-0 font-medium">Fronta</p>
-              <span className="px-1.5 py-0.5 rounded-full bg-direct-700 text-white text-[9px] font-semibold truncate">{callQueue}</span>
+              <InfoTooltip content={glossary.fronta} side="bottom">
+                <span className="px-1.5 py-0.5 rounded-full bg-direct-700 text-white text-[9px] font-semibold truncate cursor-help">{callQueue}</span>
+              </InfoTooltip>
             </div>
             <div className="flex items-center gap-1 min-w-0">
               <p className="text-[9px] text-gray-400 shrink-0 font-medium">Důvod</p>
-              <span className="px-1.5 py-0.5 rounded-full bg-direct-100 text-direct-700 text-[9px] font-medium truncate min-w-0" title={voicebotClassification}>
-                {voicebotClassification}
-              </span>
+              <InfoTooltip content={glossary.duvodHovoru} side="bottom">
+                <span className="px-1.5 py-0.5 rounded-full bg-direct-100 text-direct-700 text-[9px] font-medium truncate min-w-0 cursor-help">
+                  {voicebotClassification}
+                </span>
+              </InfoTooltip>
             </div>
           </div>
 
