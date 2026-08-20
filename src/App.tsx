@@ -7,8 +7,9 @@ import { DuringCall } from './components/DuringCall';
 import { AfterCall } from './components/AfterCall';
 import { QueueMapping } from './components/QueueMapping';
 import { SkillMatrix } from './components/SkillMatrix';
+import { IdleHome } from './components/IdleHome';
 
-export type Screen = 'login' | 'before' | 'during' | 'after' | 'queue-mapping' | 'skill-matrix';
+export type Screen = 'login' | 'idle' | 'before' | 'during' | 'after' | 'queue-mapping' | 'skill-matrix';
 
 // Re-export types that components still import from App
 export type { Role, Team, ClientType } from './context/DashboardContext';
@@ -57,7 +58,13 @@ function AppInner() {
 
   const handleRoleChange = (newRole: typeof role) => {
     setRole(newRole);
-    setCurrentScreen(newRole === 'operator' ? 'before' : 'queue-mapping');
+    setCurrentScreen(newRole === 'operator' ? 'idle' : 'queue-mapping');
+  };
+
+  const handleClientTypeChange = (newClientType: typeof clientType) => {
+    setClientType(newClientType);
+    setMockClientId(newClientType === 'standard' ? 'standard' : newClientType);
+    setCanReturnToClientSelection(false);
   };
 
   const showNav = currentScreen !== 'login';
@@ -70,7 +77,8 @@ function AppInner() {
           currentScreen={currentScreen}
           onNavigate={handleNavigate}
           onRoleChange={handleRoleChange}
-          showClientSelection={showClientSelection}
+          onClientTypeChange={handleClientTypeChange}
+          showClientSelection={showClientSelection && currentScreen !== 'idle'}
           isClientSelectionActive={currentScreen === 'before' && clientType === 'ambiguous'}
           onReturnToClientSelection={handleReturnToClientSelection}
         />
@@ -78,6 +86,7 @@ function AppInner() {
 
       <main key={currentScreen}>
         {currentScreen === 'login'         && <LoginScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'idle'          && <IdleHome />}
         {currentScreen === 'before'        && (
           <BeforeCall
             onNavigate={handleNavigate}
