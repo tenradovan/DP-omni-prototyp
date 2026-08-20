@@ -29,7 +29,8 @@ const CLIENT_CYCLE: CycleEntry[] = [
 function AppInner() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('login');
   const [cycleIndex, setCycleIndex] = useState(0);
-  const { role, setRole, setClientType, setMockClientId } = useDashboard();
+  const [canReturnToClientSelection, setCanReturnToClientSelection] = useState(false);
+  const { role, clientType, setRole, setClientType, setMockClientId } = useDashboard();
 
   const handleNavigate = (screen: Screen) => {
     // Cycle to next client whenever returning to BeforeCall from AfterCall
@@ -39,8 +40,19 @@ function AppInner() {
       const entry = CLIENT_CYCLE[next];
       setClientType(entry.clientType);
       setMockClientId(entry.mockClientId);
+      setCanReturnToClientSelection(false);
     }
     setCurrentScreen(screen);
+  };
+
+  const handleDisambiguationResolved = (clientType: 'standard' | 'unknown') => {
+    setCanReturnToClientSelection(true);
+    setClientType(clientType);
+  };
+
+  const handleReturnToClientSelection = () => {
+    setClientType('ambiguous');
+    setCurrentScreen('before');
   };
 
   const handleRoleChange = (newRole: typeof role) => {
@@ -49,6 +61,7 @@ function AppInner() {
   };
 
   const showNav = currentScreen !== 'login';
+  const showClientSelection = role === 'operator' && (clientType === 'ambiguous' || canReturnToClientSelection);
 
   return (
     <div className="min-h-screen bg-surface">
@@ -57,13 +70,29 @@ function AppInner() {
           currentScreen={currentScreen}
           onNavigate={handleNavigate}
           onRoleChange={handleRoleChange}
+          showClientSelection={showClientSelection}
+          isClientSelectionActive={currentScreen === 'before' && clientType === 'ambiguous'}
+          onReturnToClientSelection={handleReturnToClientSelection}
         />
       )}
 
       <main key={currentScreen}>
         {currentScreen === 'login'         && <LoginScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'before'        && <BeforeCall  onNavigate={handleNavigate} />}
-        {currentScreen === 'during'        && <DuringCall  onNavigate={handleNavigate} />}
+        {currentScreen === 'before'        && (
+          <BeforeCall
+            onNavigate={handleNavigate}
+            onDisambiguationResolved={handleDisambiguationResolved}
+            showClientSelection={showClientSelection}
+            onReturnToClientSelection={handleReturnToClientSelection}
+          />
+        )}
+        {currentScreen === 'during'        && (
+          <DuringCall
+            onNavigate={handleNavigate}
+            showClientSelection={showClientSelection}
+            onReturnToClientSelection={handleReturnToClientSelection}
+          />
+        )}
         {currentScreen === 'after'         && <AfterCall   onNavigate={handleNavigate} />}
         {currentScreen === 'queue-mapping' && <QueueMapping />}
         {currentScreen === 'skill-matrix'  && <SkillMatrix />}
