@@ -11,11 +11,15 @@ import {
 import type { Product, BrokerProduct, Claim, Calculation, Interaction, Ticket, ClientStatus, RiskDetail } from '../data/mockData';
 import type { Screen } from '../App';
 import { CalculationsSection } from './shared/CalculationsSection';
+import { ChangeClientButton } from './shared/ChangeClientButton';
 import { InfoTooltip } from './ui/InfoTooltip';
 import { glossary } from '../data/glossary';
 
 interface BeforeCallProps {
-  onNavigate: (screen: Screen) => void;
+  onNavigate:                  (screen: Screen) => void;
+  onDisambiguationResolved:    (clientType: 'standard' | 'unknown') => void;
+  showClientSelection:         boolean;
+  onReturnToClientSelection:   () => void;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -399,8 +403,11 @@ function InteractionIcon({ type }: { type: 'hovor' | 'email' | 'web' }) {
 
 // ─── Disambiguation modal ─────────────────────────────────────────────────────
 
-function DisambiguationView() {
-  const { setClientType } = useDashboard();
+function DisambiguationView({
+  onResolved,
+}: {
+  onResolved: (clientType: 'standard' | 'unknown') => void;
+}) {
   return (
     <div className="pt-14 animate-fade-in">
       {/* Same banner as normal calls — voicebot quote first */}
@@ -449,7 +456,7 @@ function DisambiguationView() {
           {ambiguousCallers.map((c, i) => (
             <button
               key={i}
-              onClick={() => setClientType('standard')}
+              onClick={() => onResolved('standard')}
               className="text-left bg-white rounded-2xl p-5 shadow-card hover:shadow-float transition-all hover:-translate-y-0.5 border-2 border-transparent hover:border-direct-300"
             >
               <div className="flex items-center gap-3 mb-4">
@@ -485,7 +492,7 @@ function DisambiguationView() {
             </button>
           ))}
         </div>
-        <p className="text-center text-xs text-gray-400 mt-4">Není zde správná osoba? <button onClick={() => setClientType('unknown')} className="text-direct-600 underline">Pokračovat jako neznámý volající</button></p>
+        <p className="text-center text-xs text-gray-400 mt-4">Není zde správná osoba? <button onClick={() => onResolved('unknown')} className="text-direct-600 underline">Pokračovat jako neznámý volající</button></p>
       </div>
     </div>
   );
@@ -493,7 +500,12 @@ function DisambiguationView() {
 
 // ─── BeforeCall ───────────────────────────────────────────────────────────────
 
-export function BeforeCall({ onNavigate }: BeforeCallProps) {
+export function BeforeCall({
+  onNavigate,
+  onDisambiguationResolved,
+  showClientSelection,
+  onReturnToClientSelection,
+}: BeforeCallProps) {
   const { team, clientType, mockClientId } = useDashboard();
   const [brokerSearch, setBrokerSearch] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -558,7 +570,7 @@ export function BeforeCall({ onNavigate }: BeforeCallProps) {
 
   // ── Disambiguation view ───────────────────────────────────────────────────
   if (clientType === 'ambiguous') {
-    return <DisambiguationView />;
+    return <DisambiguationView onResolved={onDisambiguationResolved} />;
   }
 
   // ── Unknown client fallback ───────────────────────────────────────────────
@@ -603,7 +615,10 @@ export function BeforeCall({ onNavigate }: BeforeCallProps) {
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-12 lg:col-span-4">
               <div className="bg-white rounded-2xl p-5 shadow-card">
-                <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-4">Identifikace klienta</p>
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Identifikace klienta</p>
+                  {showClientSelection && <ChangeClientButton onClick={onReturnToClientSelection} />}
+                </div>
                 <div className="flex flex-col items-center text-center py-4">
                   <div className="w-14 h-14 rounded-full bg-gray-300 flex items-center justify-center mb-3">
                     <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -712,7 +727,10 @@ export function BeforeCall({ onNavigate }: BeforeCallProps) {
           {/* ── Client card ────────────────────────────────────────────── */}
           <div className="col-span-12 lg:col-span-3 space-y-4">
             <div className="bg-white rounded-2xl p-5 shadow-card">
-              <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium mb-3">Klient</p>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Klient</p>
+                {showClientSelection && <ChangeClientButton onClick={onReturnToClientSelection} />}
+              </div>
 
               {/* Avatar + name header */}
               <div className="flex items-center gap-3 mb-4">

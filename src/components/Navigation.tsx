@@ -4,9 +4,12 @@ import type { Role, Team, ClientType } from '../context/DashboardContext';
 import type { Screen } from '../App';
 
 interface NavigationProps {
-  currentScreen: Screen;
-  onNavigate:    (screen: Screen) => void;
-  onRoleChange:  (role: Role) => void;
+  currentScreen:               Screen;
+  onNavigate:                  (screen: Screen) => void;
+  onRoleChange:                (role: Role) => void;
+  showClientSelection:         boolean;
+  isClientSelectionActive:     boolean;
+  onReturnToClientSelection:   () => void;
 }
 
 // Reusable segmented-control row used for role / team / clientType switching
@@ -43,7 +46,14 @@ function SegmentRow<T extends string>({
   );
 }
 
-export function Navigation({ currentScreen, onNavigate, onRoleChange }: NavigationProps) {
+export function Navigation({
+  currentScreen,
+  onNavigate,
+  onRoleChange,
+  showClientSelection,
+  isClientSelectionActive,
+  onReturnToClientSelection,
+}: NavigationProps) {
   const { role, team, setTeam, clientType, setClientType } = useDashboard();
   const [userOpen, setUserOpen] = useState(false);
 
@@ -94,8 +104,23 @@ export function Navigation({ currentScreen, onNavigate, onRoleChange }: Navigati
 
       {/* Center nav — desktop only */}
       <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-1">
+        {showClientSelection && (
+          <div className="absolute right-full mr-1 flex items-center gap-1">
+            <button
+              onClick={onReturnToClientSelection}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+                isClientSelectionActive
+                  ? 'bg-direct-800 text-white'
+                  : 'bg-lime-50 text-direct-700 hover:bg-lime-100'
+              }`}
+            >
+              Volba klienta
+            </button>
+            <div className={`w-5 h-px ${isClientSelectionActive ? 'bg-gray-100' : 'bg-lime-500'}`} />
+          </div>
+        )}
         {navItems.map((item, i) => {
-          const isActive = currentScreen === item.screen;
+          const isActive = currentScreen === item.screen && !isClientSelectionActive;
           const isPast   = role === 'operator' && phaseIndex > i;
           return (
             <div key={item.screen} className="flex items-center gap-1">

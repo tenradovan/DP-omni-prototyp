@@ -11,11 +11,14 @@ import {
 import type { Hint, Interaction, Product, BrokerProduct, Claim, Calculation, ClientStatus, RiskDetail } from '../data/mockData';
 import type { Screen } from '../App';
 import { CalculationsSection } from './shared/CalculationsSection';
+import { ChangeClientButton } from './shared/ChangeClientButton';
 import { InfoTooltip } from './ui/InfoTooltip';
 import { glossary } from '../data/glossary';
 
 interface DuringCallProps {
-  onNavigate: (screen: Screen) => void;
+  onNavigate:                  (screen: Screen) => void;
+  showClientSelection:         boolean;
+  onReturnToClientSelection:   () => void;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -495,7 +498,11 @@ function InteractionIcon({ type }: { type: 'hovor' | 'email' | 'web' }) {
 
 // ─── DuringCall ───────────────────────────────────────────────────────────────
 
-export function DuringCall({ onNavigate }: DuringCallProps) {
+export function DuringCall({
+  onNavigate,
+  showClientSelection,
+  onReturnToClientSelection,
+}: DuringCallProps) {
   const { team, clientType, mockClientId } = useDashboard();
 
   const [callTime, setCallTime] = useState(0);
@@ -693,6 +700,10 @@ export function DuringCall({ onNavigate }: DuringCallProps) {
               </>
             )}
           </div>
+
+          {showClientSelection && (
+            <ChangeClientButton compact onClick={onReturnToClientSelection} />
+          )}
 
           <div className="hidden lg:block h-7 w-px bg-gray-100 shrink-0" />
 
