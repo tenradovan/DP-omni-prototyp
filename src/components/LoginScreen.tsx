@@ -1,6 +1,5 @@
 import { useState } from 'react';
-
-type Screen = 'login' | 'before' | 'during' | 'after' | 'queue-mapping' | 'skill-matrix';
+import type { Screen } from '../App';
 
 interface LoginScreenProps {
   onNavigate: (screen: Screen) => void;
@@ -13,7 +12,7 @@ export function LoginScreen({ onNavigate }: LoginScreenProps) {
   const handleLogin = () => {
     setLoading(true);
     setError(null);
-    setTimeout(() => { setLoading(false); onNavigate('before'); }, 1200);
+    setTimeout(() => { setLoading(false); onNavigate('idle'); }, 1200);
   };
 
   return (

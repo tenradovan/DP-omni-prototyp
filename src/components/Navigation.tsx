@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDashboard, TEAM_LABELS, CLIENT_TYPE_LABELS } from '../context/DashboardContext';
 import type { Role, Team, ClientType } from '../context/DashboardContext';
 import type { Screen } from '../App';
@@ -7,6 +7,7 @@ interface NavigationProps {
   currentScreen:               Screen;
   onNavigate:                  (screen: Screen) => void;
   onRoleChange:                (role: Role) => void;
+  onClientTypeChange:          (clientType: ClientType) => void;
   showClientSelection:         boolean;
   isClientSelectionActive:     boolean;
   onReturnToClientSelection:   () => void;
@@ -50,12 +51,38 @@ export function Navigation({
   currentScreen,
   onNavigate,
   onRoleChange,
+  onClientTypeChange,
   showClientSelection,
   isClientSelectionActive,
   onReturnToClientSelection,
 }: NavigationProps) {
-  const { role, team, setTeam, clientType, setClientType } = useDashboard();
+  const { role, team, setTeam, clientType } = useDashboard();
   const [userOpen, setUserOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const userButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!userOpen) return;
+
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!userMenuRef.current?.contains(event.target as Node)) {
+        setUserOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setUserOpen(false);
+        userButtonRef.current?.focus();
+      }
+    };
+
+    document.addEventListener('mousedown', closeOnOutsideClick);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('mousedown', closeOnOutsideClick);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [userOpen]);
 
   const operatorScreens: { screen: Screen; label: string }[] = [
     { screen: 'before', label: 'Před hovorem' },
@@ -70,6 +97,7 @@ export function Navigation({
 
   const navItems = role === 'operator' ? operatorScreens : adminScreens;
   const phaseIndex = operatorScreens.findIndex(s => s.screen === currentScreen);
+  const isHomeScreen = currentScreen === 'idle';
 
   // Subtitle shown under operator name
   const subtitle = role === 'admin'
@@ -92,15 +120,18 @@ export function Navigation({
     <nav className="fixed top-0 left-0 right-0 z-50 glass shadow-card h-14 px-6 flex items-center justify-between">
 
       {/* Logo */}
-      <div
-        className="flex items-center gap-2.5 cursor-pointer shrink-0"
-        onClick={() => onNavigate(role === 'operator' ? 'before' : 'queue-mapping')}
+      <button
+        ref={userButtonRef}
+        type="button"
+        className="flex items-center gap-2.5 shrink-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+        onClick={() => onNavigate(role === 'operator' ? 'idle' : 'queue-mapping')}
+        aria-label={role === 'operator' ? 'Přejít na domovskou obrazovku' : 'Přejít na mapování front'}
       >
         <div className="w-7 h-7 rounded-lg bg-lime-500 flex items-center justify-center">
           <span className="font-sans font-bold text-direct-800 text-sm">D</span>
         </div>
-        <span className="font-sans font-bold text-direct-800 text-[15px]">Direct pojišťovna</span>
-      </div>
+        <span className="hidden sm:inline font-sans font-bold text-direct-800 text-[15px]">Direct pojišťovna</span>
+      </button>
 
       {/* Center nav — desktop only */}
       <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-1">
@@ -129,9 +160,12 @@ export function Navigation({
               )}
               {role === 'admin' && i > 0 && <div className="w-2" />}
               <button
+                disabled={isHomeScreen}
                 onClick={() => onNavigate(item.screen)}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  isActive
+                  isHomeScreen
+                    ? 'cursor-default text-gray-300'
+                    : isActive
                     ? 'bg-direct-800 text-white'
                     : isPast
                       ? 'bg-lime-50 text-direct-700 hover:bg-lime-100'
@@ -146,12 +180,16 @@ export function Navigation({
       </div>
 
       {/* User menu */}
-      <div className="relative shrink-0">
+      <div ref={userMenuRef} className="relative shrink-0">
         <button
+          type="button"
           onClick={() => setUserOpen(!userOpen)}
-          className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2.5 rounded-lg hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+          aria-haspopup="dialog"
+          aria-expanded={userOpen}
+          aria-controls="user-settings-menu"
         >
-          <div className="text-right">
+          <div className="hidden text-right sm:block">
             <p className="text-sm text-direct-800 font-medium leading-tight">Petr Svoboda</p>
             <p className="text-[10px] text-gray-400 leading-tight">{subtitle}</p>
           </div>
@@ -162,9 +200,10 @@ export function Navigation({
 
         {userOpen && (
           <div
+            id="user-settings-menu"
+            role="dialog"
+            aria-label="Nastavení uživatele"
             className="absolute top-full mt-2 right-0 w-64 bg-white rounded-xl shadow-float py-1 animate-fade-in"
-            // Close when clicking outside
-            onMouseLeave={() => {/* keep open on hover-off so user can click */}}
           >
             {/* Team — operator only */}
             {role === 'operator' && (
@@ -181,7 +220,13 @@ export function Navigation({
               label="Typ klienta"
               options={clientTypeOptions}
               value={clientType}
-              onChange={setClientType}
+              onChange={(newClientType) => {
+                onClientTypeChange(newClientType);
+                if (isHomeScreen) {
+                  onNavigate('before');
+                  setUserOpen(false);
+                }
+              }}
             />
 
             {/* Sign out */}
@@ -207,9 +252,16 @@ export function Navigation({
             return (
               <button
                 key={item.screen}
+                disabled={isHomeScreen}
                 onClick={() => onNavigate(item.screen)}
                 className={`flex-1 flex flex-col items-center gap-1 py-1 transition-colors ${
-                  isActive ? 'text-direct-800' : isPast ? 'text-lime-600' : 'text-gray-300'
+                  isHomeScreen
+                    ? 'cursor-default text-gray-300'
+                    : isActive
+                      ? 'text-direct-800'
+                      : isPast
+                        ? 'text-lime-600'
+                        : 'text-gray-300'
                 }`}
               >
                 <div className={`w-10 h-1 rounded-full transition-colors ${
