@@ -12,6 +12,8 @@ import type { Product, BrokerProduct, Claim, Calculation, Interaction, Ticket, C
 import type { Screen } from '../App';
 import { CalculationsSection } from './shared/CalculationsSection';
 import { ChangeClientButton } from './shared/ChangeClientButton';
+import { ClientStatusBadge } from './shared/ClientStatusBadge';
+import { NewCoreButton } from './shared/NewCoreButton';
 import { InfoTooltip } from './ui/InfoTooltip';
 import { glossary } from '../data/glossary';
 
@@ -42,12 +44,6 @@ function statusAvatarBg(status: ClientStatus): string {
   if (status === 'aktivní') return 'bg-direct-800';
   if (status === 'bývalý')  return 'bg-gray-400';
   return 'bg-amber-500';
-}
-
-function statusLabel(status: ClientStatus): { text: string; cls: string } {
-  if (status === 'aktivní') return { text: 'Aktivní klient',  cls: 'bg-lime-50 text-direct-700' };
-  if (status === 'bývalý')  return { text: 'Bývalý klient',   cls: 'bg-gray-100 text-gray-500'  };
-  return                           { text: 'Neklient',        cls: 'bg-amber-50 text-amber-700' };
 }
 
 function claimStatusCls(s: string): string {
@@ -684,7 +680,6 @@ export function BeforeCall({
 
   // ── Normal client render ──────────────────────────────────────────────────
   const avatarBg = statusAvatarBg(activeClient!.status);
-  const sl       = statusLabel(activeClient!.status);
 
   return (
     <div className="pt-14 animate-fade-in">
@@ -729,7 +724,10 @@ export function BeforeCall({
             <div className="bg-white rounded-2xl p-5 shadow-card">
               <div className="flex items-center justify-between gap-3 mb-3">
                 <p className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Klient</p>
-                {showClientSelection && <ChangeClientButton onClick={onReturnToClientSelection} />}
+                <div className="flex flex-wrap justify-end gap-2">
+                  {showClientSelection && <ChangeClientButton onClick={onReturnToClientSelection} />}
+                  <NewCoreButton />
+                </div>
               </div>
 
               {/* Avatar + name header */}
@@ -745,13 +743,14 @@ export function BeforeCall({
                         ? (activeClient as typeof brokerClient).čísloBrokera
                         : activeClient!.čísloKlienta}
                     </p>
-                    <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${sl.cls}`}>{sl.text}</span>
                   </div>
-                  {/* App & Klientská zóna indicators */}
-                  {activeClient!.type !== 'broker' && (() => {
-                    const c = activeClient as (typeof client | typeof companyClient);
-                    return (
-                      <div className="flex items-center gap-1 mt-1">
+                  {/* Status, app & Klientská zóna indicators */}
+                  <div className="flex items-center gap-1 mt-1">
+                    <ClientStatusBadge status={activeClient!.status} />
+                    {activeClient!.type !== 'broker' && (() => {
+                      const c = activeClient as (typeof client | typeof companyClient);
+                      return (
+                        <>
                         <InfoTooltip content={c.aktivníApp ? glossary.aktivníApp : 'Mobilní aplikace Moje Direct — klient ji nemá aktivní'}>
                           <span className={`w-6 h-6 rounded-md flex items-center justify-center cursor-help ${c.aktivníApp ? 'bg-lime-100 text-green-700' : 'bg-red-50 text-red-400'}`}>
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -766,18 +765,10 @@ export function BeforeCall({
                             </svg>
                           </span>
                         </InfoTooltip>
-                      </div>
-                    );
-                  })()}
-                  {/* NewCore link */}
-                  <InfoTooltip content={glossary.newcoreLink} side="bottom">
-                    <a href="#" className="inline-flex items-center gap-0.5 text-[10px] text-direct-500 hover:text-direct-700 font-medium mt-1">
-                      Otevřít v NewCore
-                      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                    </a>
-                  </InfoTooltip>
+                        </>
+                      );
+                    })()}
+                  </div>
                 </div>
               </div>
 

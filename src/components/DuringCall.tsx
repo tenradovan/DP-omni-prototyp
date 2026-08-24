@@ -12,6 +12,8 @@ import type { Hint, Interaction, Product, BrokerProduct, Claim, Calculation, Cli
 import type { Screen } from '../App';
 import { CalculationsSection } from './shared/CalculationsSection';
 import { ChangeClientButton } from './shared/ChangeClientButton';
+import { ClientStatusBadge } from './shared/ClientStatusBadge';
+import { NewCoreButton } from './shared/NewCoreButton';
 import { InfoTooltip } from './ui/InfoTooltip';
 import { glossary } from '../data/glossary';
 
@@ -663,17 +665,8 @@ export function DuringCall({
             ) : (
               <>
                 <p className="text-base font-bold text-direct-800 leading-tight">{activeClient!.name}</p>
-                <div className="flex items-center gap-1.5">
-                  <p className="text-[11px] text-direct-600 font-semibold">
-                    {activeClient!.type === 'broker'
-                      ? (activeClient as typeof brokerClient).čísloBrokera
-                      : activeClient!.čísloKlienta}
-                  </p>
-                  <InfoTooltip content={glossary.newcoreLink} side="bottom">
-                    <a href="#" className="text-[9px] text-direct-400 hover:text-direct-600 font-medium flex items-center gap-0.5">
-                      NC ↗
-                    </a>
-                  </InfoTooltip>
+                <div className="flex items-center gap-0.5">
+                  <ClientStatusBadge status={activeClient!.status} compact />
                   {/* App/zone indicators */}
                   {activeClient!.type !== 'broker' && (() => {
                     const c = activeClient as (typeof client | typeof companyClient);
@@ -701,9 +694,10 @@ export function DuringCall({
             )}
           </div>
 
-          {showClientSelection && (
-            <ChangeClientButton compact onClick={onReturnToClientSelection} />
-          )}
+          <div className="flex shrink-0 flex-col items-start gap-1">
+            {showClientSelection && <ChangeClientButton compact onClick={onReturnToClientSelection} />}
+            {!isUnknown && <NewCoreButton compact />}
+          </div>
 
           <div className="hidden lg:block h-7 w-px bg-gray-100 shrink-0" />
 
