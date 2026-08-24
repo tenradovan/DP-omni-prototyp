@@ -67,6 +67,31 @@ function AppInner() {
     setCanReturnToClientSelection(false);
   };
 
+  const handleHomepageClientSearch = (query: string) => {
+    const normalizedQuery = query.toLocaleLowerCase('cs-CZ');
+    const result = normalizedQuery.includes('abc')
+      || normalizedQuery.includes('kl-f-2020-00042')
+      || normalizedQuery.includes('234 567 890')
+      ? { clientType: 'company' as const, mockClientId: 'company' }
+      : normalizedQuery.includes('pavel')
+        || normalizedQuery.includes('kratochvíl')
+        || normalizedQuery.includes('mk-2019-00145')
+        || normalizedQuery.includes('775 123 456')
+        ? { clientType: 'broker' as const, mockClientId: 'broker' }
+        : normalizedQuery === 'jan novák'
+          ? { clientType: 'ambiguous' as const, mockClientId: 'ambiguous' }
+          : normalizedQuery.includes('jana')
+            || normalizedQuery.includes('kl-2024-00891')
+            || normalizedQuery.includes('602 345 678')
+            ? { clientType: 'standard' as const, mockClientId: 'standard' }
+            : { clientType: 'unknown' as const, mockClientId: 'unknown' };
+
+    setClientType(result.clientType);
+    setMockClientId(result.mockClientId);
+    setCanReturnToClientSelection(false);
+    setCurrentScreen('before');
+  };
+
   const showNav = currentScreen !== 'login';
   const showClientSelection = role === 'operator' && (clientType === 'ambiguous' || canReturnToClientSelection);
 
@@ -86,7 +111,9 @@ function AppInner() {
 
       <main key={currentScreen}>
         {currentScreen === 'login'         && <LoginScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'idle'          && <IdleHome />}
+        {currentScreen === 'idle'          && (
+          <IdleHome onSearchClient={handleHomepageClientSearch} />
+        )}
         {currentScreen === 'before'        && (
           <BeforeCall
             onNavigate={handleNavigate}
