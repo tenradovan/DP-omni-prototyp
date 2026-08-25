@@ -6,7 +6,7 @@ import {
   brokerClient, brokerProducts, brokerInteractions,
   standardNoEmailClient, standardAutoClient, autoCalculations,
   callDirection, callQueue, voicebotQuote, voicebotClassification,
-  unknownCallerPhone, ambiguousCallers,
+  unknownCallerPhone, ambiguousCallers, AMBIGUOUS_PRODUCT_TYPES,
 } from '../data/mockData';
 import type { Product, BrokerProduct, Claim, Calculation, Interaction, Ticket, ClientStatus, RiskDetail } from '../data/mockData';
 import type { Screen } from '../App';
@@ -19,7 +19,7 @@ import { glossary } from '../data/glossary';
 
 interface BeforeCallProps {
   onNavigate:                  (screen: Screen) => void;
-  onDisambiguationResolved:    (clientType: 'standard' | 'unknown') => void;
+  onDisambiguationResolved:    (clientType: 'standard' | 'company' | 'unknown') => void;
   showClientSelection:         boolean;
   onReturnToClientSelection:   () => void;
 }
@@ -402,7 +402,7 @@ function InteractionIcon({ type }: { type: 'hovor' | 'email' | 'web' }) {
 function DisambiguationView({
   onResolved,
 }: {
-  onResolved: (clientType: 'standard' | 'unknown') => void;
+  onResolved: (clientType: 'standard' | 'company' | 'unknown') => void;
 }) {
   return (
     <div className="pt-14 animate-fade-in">
@@ -452,14 +452,20 @@ function DisambiguationView({
           {ambiguousCallers.map((c, i) => (
             <button
               key={i}
-              onClick={() => onResolved('standard')}
+              onClick={() => onResolved(c.type === 'company' ? 'company' : 'standard')}
               className="text-left bg-white rounded-2xl p-5 shadow-card hover:shadow-float transition-all hover:-translate-y-0.5 border-2 border-transparent hover:border-direct-300"
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-full bg-direct-800 flex items-center justify-center shrink-0">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
+                  {c.type === 'company' ? (
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  )}
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-direct-800">{c.name}</h3>
@@ -468,15 +474,26 @@ function DisambiguationView({
               </div>
               <div className="space-y-1.5">
                 <div>
-                  <p className="text-[9px] uppercase tracking-wider text-gray-400">Datum narození</p>
-                  <p className="text-sm font-medium text-direct-800">{c.datumNarození}</p>
+                  <p className="text-[9px] uppercase tracking-wider text-gray-400">{c.type === 'company' ? 'IČO' : 'Datum narození'}</p>
+                  <p className="text-sm font-medium text-direct-800">{c.type === 'company' ? c.ičo : c.datumNarození}</p>
                 </div>
                 <div>
-                  <p className="text-[9px] uppercase tracking-wider text-gray-400">Trvalé bydliště</p>
-                  <p className="text-sm font-medium text-direct-800">{c.trvaléBydliště}</p>
+                  <p className="text-[9px] uppercase tracking-wider text-gray-400">Adresa</p>
+                  <p className="text-sm font-medium text-direct-800">{c.adresa}</p>
                 </div>
-                <div className="flex items-center gap-1.5 pt-1">
-                  <span className="px-1.5 py-0.5 rounded-full bg-lime-50 text-direct-700 text-[9px] font-semibold">{c.status}</span>
+                <div className="pt-3">
+                  <p className="text-[9px] uppercase tracking-wider text-gray-400 mb-2">Pojištění</p>
+                  <div className="flex flex-wrap gap-2">
+                    {c.productTypes.map(productType => {
+                      const product = AMBIGUOUS_PRODUCT_TYPES[productType];
+                      return (
+                        <span key={productType} className="inline-flex items-center gap-2 rounded-xl bg-direct-25 px-3 py-2 text-xs font-semibold text-direct-800">
+                          <span className="text-base leading-none">{product.icon}</span>
+                          {product.label}
+                        </span>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
               <div className="mt-4 flex items-center gap-1.5 text-direct-600">

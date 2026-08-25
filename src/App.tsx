@@ -46,7 +46,7 @@ function AppInner() {
     setCurrentScreen(screen);
   };
 
-  const handleDisambiguationResolved = (clientType: 'standard' | 'unknown') => {
+  const handleDisambiguationResolved = (clientType: 'standard' | 'company' | 'unknown') => {
     setCanReturnToClientSelection(true);
     setClientType(clientType);
   };

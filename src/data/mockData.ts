@@ -160,28 +160,39 @@ export interface Operator {
 
 // ─── Disambiguation (ambiguous caller) ───────────────────────────────────────
 
+export type AmbiguousProductType = 'vehicle' | 'business';
+
+export const AMBIGUOUS_PRODUCT_TYPES: Record<AmbiguousProductType, { icon: string; label: string }> = {
+  vehicle: { icon: '🚗', label: 'Pojištění vozidla' },
+  business: { icon: '🏭', label: 'Pojištění podnikání' },
+};
+
 export interface AmbiguousCandidate {
+  type: 'person' | 'company';
   name: string;
-  datumNarození: string;
-  trvaléBydliště: string;
+  datumNarození?: string;
+  ičo?: string;
+  adresa: string;
   čísloKlienta: string;
-  status: ClientStatus;
+  productTypes: AmbiguousProductType[];
 }
 
 export const ambiguousCallers: AmbiguousCandidate[] = [
   {
+    type: 'person',
     name: 'Jan Novák',
     datumNarození: '15. 6. 1978',
-    trvaléBydliště: 'Mánesova 12, Praha 2',
+    adresa: 'Mánesova 12, Praha 2',
     čísloKlienta: 'KL-2019-00234',
-    status: 'aktivní',
+    productTypes: ['vehicle'],
   },
   {
-    name: 'Jan Novák',
-    datumNarození: '3. 11. 1991',
-    trvaléBydliště: 'Lidická 7, Brno',
+    type: 'company',
+    name: 'Novák Auto s.r.o.',
+    ičo: '078 45 612',
+    adresa: 'Lidická 7, Brno',
     čísloKlienta: 'KL-2021-01567',
-    status: 'aktivní',
+    productTypes: ['vehicle', 'business'],
   },
 ];
 
