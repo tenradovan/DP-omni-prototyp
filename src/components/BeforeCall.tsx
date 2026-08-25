@@ -478,7 +478,7 @@ function DisambiguationView({
                   <p className="text-sm font-medium text-direct-800">{c.type === 'company' ? c.ičo : c.datumNarození}</p>
                 </div>
                 <div>
-                  <p className="text-[9px] uppercase tracking-wider text-gray-400">Adresa</p>
+                  <p className="text-[9px] uppercase tracking-wider text-gray-400">{c.type === 'company' ? 'Adresa' : 'Trvalé bydliště'}</p>
                   <p className="text-sm font-medium text-direct-800">{c.adresa}</p>
                 </div>
                 <div className="pt-3">
