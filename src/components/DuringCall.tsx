@@ -1030,21 +1030,6 @@ export function DuringCall({
               </div>
             </div>
 
-            {/* Color legend */}
-            <div className="px-3 py-2 border-b border-gray-50 flex items-center gap-3 flex-wrap shrink-0">
-              {([
-                ['bg-amber-400',  'Compliance'],
-                ['bg-blue-400',   'Námitka'],
-                ['bg-direct-500', 'Produkt'],
-                ['bg-purple-400', 'Info'],
-              ] as [string, string][]).map(([color, label]) => (
-                <span key={label} className="flex items-center gap-1">
-                  <span className={`w-2 h-2 rounded-full shrink-0 ${color}`} />
-                  <span className="text-[9px] text-gray-400 font-medium">{label}</span>
-                </span>
-              ))}
-            </div>
-
             <div className="lg:flex-1 lg:overflow-y-auto no-scrollbar p-3 space-y-2">
               {orderedHints.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 text-gray-300">
